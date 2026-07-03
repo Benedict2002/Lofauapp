@@ -1,17 +1,17 @@
 package com.codewithben.Lofau.Post.dto.request;
 
-
 import com.codewithben.Lofau.Post.enums.Category;
 import com.codewithben.Lofau.Post.enums.PostType;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import org.antlr.v4.runtime.misc.NotNull;
 
 import java.math.BigDecimal;
 
 @Data
 public class CreatePostRequest {
 
+    @NotBlank
     private String title;
 
     @NotBlank
@@ -31,6 +31,6 @@ public class CreatePostRequest {
 
     private BigDecimal rewardAmount;
 
-    private Boolean anonymous;
+    private Boolean anonymous = false;
 
 }

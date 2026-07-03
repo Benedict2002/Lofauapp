@@ -6,45 +6,63 @@ import com.codewithben.Lofau.Post.entity.Post;
 import com.codewithben.Lofau.Post.mapper.PostMapper;
 import com.codewithben.Lofau.Post.repository.PostRepository;
 import com.codewithben.Lofau.Post.service.PostService;
+import com.codewithben.Lofau.User.model.User;
 import com.codewithben.Lofau.User.userRepo.UserRepository;
+import com.codewithben.Lofau.media.enums.OwnerType;
+import com.codewithben.Lofau.media.service.MediaService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
-
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final PostMapper postMapper;
-   
-
-    //String email = authentication.getName();
+    private final MediaService mediaService;
 
     @Override
-    public PostResponse createPost(CreatePostRequest request) {
+    public PostResponse createPost(
+            CreatePostRequest request,
+            List<MultipartFile> files
+    ) throws IOException {
 
         Authentication authentication =
                 SecurityContextHolder.getContext().getAuthentication();
 
-        if (authentication == null) {
+        if (authentication == null || !authentication.isAuthenticated()) {
             throw new RuntimeException("No authenticated user found");
         }
 
         String email = authentication.getName();
 
-        System.out.println("Logged in user: " + email);
-
-        var user = userRepository.findByEmail(email)
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         Post post = postMapper.toEntity(request);
+
         post.setUser(user);
 
-        return postMapper.toResponse(postRepository.save(post));
+        Post savedPost = postRepository.save(post);
+
+        // Upload images after the post has been saved
+        mediaService.savePostMedia(
+                savedPost.getId(),
+                files,
+                OwnerType.POST
+        );
+
+        // Return the complete post with media
+        return postMapper.toResponse(savedPost);
     }
 
 }

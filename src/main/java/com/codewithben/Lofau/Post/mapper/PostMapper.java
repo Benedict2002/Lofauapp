@@ -3,16 +3,22 @@ package com.codewithben.Lofau.Post.mapper;
 import com.codewithben.Lofau.Post.dto.request.CreatePostRequest;
 import com.codewithben.Lofau.Post.dto.response.PostResponse;
 import com.codewithben.Lofau.Post.entity.Post;
-import com.codewithben.Lofau.Post.entity.PostMedia;
+import com.codewithben.Lofau.media.enums.OwnerType;
+import com.codewithben.Lofau.media.service.MediaService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
-import java.util.stream.Collectors;
-
 @Component
+@RequiredArgsConstructor
 public class PostMapper {
 
+    private final MediaService mediaService;
+
     public Post toEntity(CreatePostRequest request) {
+
+        if (request == null) {
+            return null;
+        }
 
         return Post.builder()
                 .title(request.getTitle())
@@ -23,18 +29,20 @@ public class PostMapper {
                 .latitude(request.getLatitude())
                 .longitude(request.getLongitude())
                 .rewardAmount(request.getRewardAmount())
-                .anonymous(Boolean.TRUE.equals(request.getAnonymous()))
+                .anonymous(request.getAnonymous())
                 .build();
     }
 
     public PostResponse toResponse(Post post) {
 
+        if (post == null) {
+            return null;
+        }
+
         return PostResponse.builder()
                 .id(post.getId())
                 .userId(post.getUser().getId())
-                .username(post.getAnonymous()
-                        ? "Anonymous"
-                        : post.getUser().getUsername())
+                .username(post.getUser().getUsername())
                 .title(post.getTitle())
                 .description(post.getDescription())
                 .postType(post.getPostType())
@@ -49,16 +57,13 @@ public class PostMapper {
                 .shares(post.getShares())
                 .views(post.getViews())
                 .anonymous(post.getAnonymous())
-                .mediaUrls(
-                        post.getMedia() == null
-                                ? Collections.emptyList()
-                                : post.getMedia()
-                                  .stream()
-                                  .map(PostMedia::getMediaUrl)
-                                  .collect(Collectors.toList())
+                .media(
+                        mediaService.getMedia(
+                                post.getId(),
+                                OwnerType.POST
+                        )
                 )
                 .createdAt(post.getCreatedAt())
                 .build();
     }
-
 }

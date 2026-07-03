@@ -1,7 +1,9 @@
 package com.codewithben.Lofau.Post.dto.response;
+
 import com.codewithben.Lofau.Post.enums.Category;
 import com.codewithben.Lofau.Post.enums.PostStatus;
 import com.codewithben.Lofau.Post.enums.PostType;
+import com.codewithben.Lofau.media.dto.response.MediaResponse;
 import lombok.Builder;
 import lombok.Data;
 
@@ -16,7 +18,7 @@ public class PostResponse {
 
     private UUID id;
 
-    Long userId;
+    private Long userId;
 
     private String username;
 
@@ -48,7 +50,8 @@ public class PostResponse {
 
     private Boolean anonymous;
 
-    private List<String> mediaUrls;
+
+    private List<MediaResponse> media;
 
     private LocalDateTime createdAt;
 
