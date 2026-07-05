@@ -27,7 +27,7 @@ public class MediaServiceImpl implements MediaService {
     private final CloudinaryService cloudinaryService;
 
     @Override
-    public List<MediaResponse> savePostMedia(
+    public List<MediaResponse> saveMedia(
             UUID ownerId,
             List<MultipartFile> files,
             OwnerType ownerType

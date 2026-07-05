@@ -11,7 +11,7 @@ import java.util.UUID;
 
 public interface MediaService {
 
-    List<MediaResponse> savePostMedia(
+    List<MediaResponse> saveMedia(
 
             UUID ownerId,
 

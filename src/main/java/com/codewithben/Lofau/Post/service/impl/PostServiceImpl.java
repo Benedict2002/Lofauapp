@@ -55,7 +55,7 @@ public class PostServiceImpl implements PostService {
         Post savedPost = postRepository.save(post);
 
         // Upload images after the post has been saved
-        mediaService.savePostMedia(
+        mediaService.saveMedia(
                 savedPost.getId(),
                 files,
                 OwnerType.POST
