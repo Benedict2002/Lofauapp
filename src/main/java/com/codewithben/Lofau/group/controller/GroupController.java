@@ -1,6 +1,8 @@
 package com.codewithben.Lofau.group.controller;
 
 import com.codewithben.Lofau.group.dto.request.CreateGroupRequest;
+import com.codewithben.Lofau.group.dto.request.UpdateGroupRequest;
+import com.codewithben.Lofau.group.dto.response.GroupMemberResponse;
 import com.codewithben.Lofau.group.dto.response.GroupResponse;
 import com.codewithben.Lofau.group.enums.GroupCategory;
 import com.codewithben.Lofau.group.enums.GroupVisibility;
@@ -85,5 +87,145 @@ public class GroupController {
                 groupService.getGroupById(id)
         );
     }
+
+
+    @PostMapping("/{groupId}/join")
+    public ResponseEntity<GroupResponse> joinGroup(
+            @PathVariable String groupId
+    ) {
+
+        return ResponseEntity.ok(
+                groupService.joinGroup(groupId)
+        );
+    }
+
+    @DeleteMapping("/{groupId}/leave")
+    public ResponseEntity<Void> leaveGroup(
+            @PathVariable String groupId
+    ) {
+
+        groupService.leaveGroup(groupId);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{groupId}/members")
+    public ResponseEntity<List<GroupMemberResponse>> getMembers(
+            @PathVariable String groupId
+    ) {
+
+        return ResponseEntity.ok(
+                groupService.getMembers(groupId)
+        );
+    }
+
+    @GetMapping("/{groupId}/requests")
+    public ResponseEntity<List<GroupMemberResponse>> getPendingRequests(
+            @PathVariable String groupId
+    ) {
+
+        return ResponseEntity.ok(
+                groupService.getPendingRequests(groupId)
+        );
+
+    }
+
+    @PutMapping("/{groupId}/requests/{userId}/approve")
+    public ResponseEntity<String> approveRequest(
+
+            @PathVariable String groupId,
+
+            @PathVariable Long userId
+
+    ) {
+
+        groupService.approveJoinRequest(groupId, userId);
+
+        return ResponseEntity.ok("Join request approved.");
+
+    }
+
+    @DeleteMapping("/{groupId}/requests/{userId}/reject")
+    public ResponseEntity<String> rejectRequest(
+
+            @PathVariable String groupId,
+
+            @PathVariable Long userId
+
+    ) {
+
+        groupService.rejectJoinRequest(groupId, userId);
+
+        return ResponseEntity.ok("Join request rejected.");
+
+    }
+
+    @PutMapping("/{groupId}/members/{userId}/promote")
+    public ResponseEntity<String> promoteMember(
+            @PathVariable String groupId,
+            @PathVariable Long userId
+    ) {
+
+        groupService.promoteToAdmin(groupId, userId);
+
+        return ResponseEntity.ok("Member promoted to ADMIN.");
+
+    }
+    @PutMapping("/{groupId}/members/{userId}/demote")
+    public ResponseEntity<String> demoteAdmin(
+            @PathVariable String groupId,
+            @PathVariable Long userId
+    ) {
+
+        groupService.demoteAdmin(groupId, userId);
+
+        return ResponseEntity.ok("Admin demoted to MEMBER.");
+
+    }
+
+    @DeleteMapping("/{groupId}/members/{userId}")
+    public ResponseEntity<String> removeMember(
+            @PathVariable String groupId,
+            @PathVariable Long userId
+    ) {
+
+        groupService.removeMember(groupId, userId);
+
+        return ResponseEntity.ok("Member removed successfully.");
+
+    }
+
+
+    @PutMapping("/{groupId}")
+    public ResponseEntity<GroupResponse> updateGroup(
+
+            @PathVariable String groupId,
+
+            @RequestBody UpdateGroupRequest request
+
+    ) {
+
+        return ResponseEntity.ok(
+
+                groupService.updateGroup(
+                        groupId,
+                        request
+                )
+
+        );
+
+    }
+
+    @DeleteMapping("/{groupId}")
+    public ResponseEntity<String> deleteGroup(
+            @PathVariable String groupId
+    ) {
+
+        groupService.deleteGroup(groupId);
+
+        return ResponseEntity.ok("Group deleted successfully.");
+
+    }
+
 
 }

@@ -8,6 +8,11 @@ import com.codewithben.Lofau.Post.repository.PostRepository;
 import com.codewithben.Lofau.Post.service.PostService;
 import com.codewithben.Lofau.User.model.User;
 import com.codewithben.Lofau.User.userRepo.UserRepository;
+import com.codewithben.Lofau.group.entity.Group;
+import com.codewithben.Lofau.group.entity.GroupMember;
+import com.codewithben.Lofau.group.enums.MemberStatus;
+import com.codewithben.Lofau.group.repository.GroupMemberRepository;
+import com.codewithben.Lofau.group.repository.GroupRepository;
 import com.codewithben.Lofau.media.enums.OwnerType;
 import com.codewithben.Lofau.media.service.MediaService;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +34,8 @@ public class PostServiceImpl implements PostService {
     private final UserRepository userRepository;
     private final PostMapper postMapper;
     private final MediaService mediaService;
+    private final GroupRepository groupRepository;
+    private final GroupMemberRepository groupMemberRepository;
 
     @Override
     public PostResponse createPost(
@@ -39,7 +46,7 @@ public class PostServiceImpl implements PostService {
         Authentication authentication =
                 SecurityContextHolder.getContext().getAuthentication();
 
-        if (authentication == null || !authentication.isAuthenticated()) {
+        if (authentication == null) {
             throw new RuntimeException("No authenticated user found");
         }
 
@@ -52,17 +59,81 @@ public class PostServiceImpl implements PostService {
 
         post.setUser(user);
 
+        /*
+         * GROUP POST
+         */
+        if (request.getGroupId() != null) {
+
+            Group group = groupRepository.findById(request.getGroupId())
+                    .orElseThrow(() ->
+                            new RuntimeException("Group not found"));
+
+            GroupMember member = groupMemberRepository
+                    .findByGroupAndUser(group, user)
+                    .orElseThrow(() ->
+                            new RuntimeException("You are not a member of this group"));
+
+            if (member.getStatus() != MemberStatus.APPROVED) {
+                throw new RuntimeException(
+                        "Your membership has not been approved."
+                );
+            }
+
+            post.setGroup(group);
+        }
+
         Post savedPost = postRepository.save(post);
 
-        // Upload images after the post has been saved
-        mediaService.saveMedia(
-                savedPost.getId(),
-                files,
-                OwnerType.POST
-        );
+        if (files != null && !files.isEmpty()) {
 
-        // Return the complete post with media
+            mediaService.saveMedia(
+
+                    savedPost.getId(),
+
+                    files,
+
+                    OwnerType.POST
+
+            );
+
+        }
+
         return postMapper.toResponse(savedPost);
+
     }
+//    @Override
+//    public PostResponse createPost(
+//            CreatePostRequest request,
+//            List<MultipartFile> files
+//    ) throws IOException {
+//
+//        Authentication authentication =
+//                SecurityContextHolder.getContext().getAuthentication();
+//
+//        if (authentication == null || !authentication.isAuthenticated()) {
+//            throw new RuntimeException("No authenticated user found");
+//        }
+//
+//        String email = authentication.getName();
+//
+//        User user = userRepository.findByEmail(email)
+//                .orElseThrow(() -> new RuntimeException("User not found"));
+//
+//        Post post = postMapper.toEntity(request);
+//
+//        post.setUser(user);
+//
+//        Post savedPost = postRepository.save(post);
+//
+//        // Upload images after the post has been saved
+//        mediaService.saveMedia(
+//                savedPost.getId(),
+//                files,
+//                OwnerType.POST
+//        );
+//
+//        // Return the complete post with media
+//        return postMapper.toResponse(savedPost);
+//    }
 
 }

@@ -41,8 +41,22 @@ public class PostMapper {
 
         return PostResponse.builder()
                 .id(post.getId())
+
                 .userId(post.getUser().getId())
                 .username(post.getUser().getUsername())
+
+                // Group Information
+                .groupId(
+                        post.getGroup() != null
+                                ? post.getGroup().getId()
+                                : null
+                )
+                .groupName(
+                        post.getGroup() != null
+                                ? post.getGroup().getName()
+                                : null
+                )
+
                 .title(post.getTitle())
                 .description(post.getDescription())
                 .postType(post.getPostType())
@@ -57,12 +71,14 @@ public class PostMapper {
                 .shares(post.getShares())
                 .views(post.getViews())
                 .anonymous(post.getAnonymous())
+
                 .media(
                         mediaService.getMedia(
                                 post.getId(),
                                 OwnerType.POST
                         )
                 )
+
                 .createdAt(post.getCreatedAt())
                 .build();
     }

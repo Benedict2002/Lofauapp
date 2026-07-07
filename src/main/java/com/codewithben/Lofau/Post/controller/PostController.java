@@ -2,6 +2,8 @@ package com.codewithben.Lofau.Post.controller;
 
 import com.codewithben.Lofau.Post.dto.request.CreatePostRequest;
 import com.codewithben.Lofau.Post.dto.response.PostResponse;
+import com.codewithben.Lofau.Post.enums.Category;
+import com.codewithben.Lofau.Post.enums.PostType;
 import com.codewithben.Lofau.Post.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +14,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/posts")
@@ -21,26 +25,48 @@ public class PostController {
 
     private final PostService postService;
 
-    @PostMapping(
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<PostResponse> createPost(
 
-            @Valid
-            @ModelAttribute CreatePostRequest request,
+            @RequestParam(required = false) UUID groupId,
 
-            @RequestPart(value = "files", required = false)
-            List<MultipartFile> files
+            @RequestParam(required = false) String title,
+
+            @RequestParam String description,
+
+            @RequestParam PostType postType,
+
+            @RequestParam Category category,
+
+            @RequestParam(required = false) String locationName,
+
+            @RequestParam(required = false) Double latitude,
+
+            @RequestParam(required = false) Double longitude,
+
+            @RequestParam(required = false) BigDecimal rewardAmount,
+
+            @RequestParam(defaultValue = "false") Boolean anonymous,
+
+            @RequestPart(required = false) List<MultipartFile> files
 
     ) throws IOException {
 
-        PostResponse response = postService.createPost(request, files);
+        CreatePostRequest request = new CreatePostRequest();
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(response);
+        request.setGroupId(groupId);
+        request.setTitle(title);
+        request.setDescription(description);
+        request.setPostType(postType);
+        request.setCategory(category);
+        request.setLocationName(locationName);
+        request.setLatitude(latitude);
+        request.setLongitude(longitude);
+        request.setRewardAmount(rewardAmount);
+        request.setAnonymous(anonymous);
 
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(postService.createPost(request, files));
     }
 
 }

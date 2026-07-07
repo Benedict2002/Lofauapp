@@ -28,6 +28,12 @@ public class PostResponse {
 
     private PostType postType;
 
+
+    private UUID groupId;
+
+
+    private String groupName;
+
     private Category category;
 
     private PostStatus status;

@@ -5,6 +5,7 @@ import com.codewithben.Lofau.Post.enums.PostStatus;
 import com.codewithben.Lofau.Post.enums.PostType;
 import com.codewithben.Lofau.Post.enums.Visibility;
 import com.codewithben.Lofau.User.model.User;
+import com.codewithben.Lofau.group.entity.Group;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -30,6 +31,11 @@ public class Post {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "group_id", nullable = true)
+    private Group group;
 
     @Column(length = 150)
     private String title;
@@ -88,6 +94,7 @@ public class Post {
     )
     @Builder.Default
     private List<PostMedia> media = new ArrayList<>();
+
 
     private LocalDateTime createdAt;
 
