@@ -5,6 +5,7 @@ import com.codewithben.Lofau.Post.enums.PostStatus;
 import com.codewithben.Lofau.Post.enums.PostType;
 import com.codewithben.Lofau.Post.enums.Visibility;
 import com.codewithben.Lofau.User.model.User;
+import com.codewithben.Lofau.comment.entity.Comment;
 import com.codewithben.Lofau.group.entity.Group;
 import jakarta.persistence.*;
 import lombok.*;
@@ -36,6 +37,14 @@ public class Post {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id", nullable = true)
     private Group group;
+
+    @OneToMany(
+            mappedBy = "post",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @Builder.Default
+    private List<Comment> comments = new ArrayList<>();
 
     @Column(length = 150)
     private String title;
