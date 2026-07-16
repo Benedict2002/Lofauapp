@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -55,6 +56,40 @@ public class CommentController {
 
         );
 
+    }
+
+    @PostMapping("/comments/{commentId}/reply")
+    public ResponseEntity<CommentResponse> replyToComment(
+
+            @PathVariable UUID commentId,
+
+            @Valid
+            @RequestBody CreateCommentRequest request
+
+    ) {
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(
+                        commentService.replyToComment(
+                                commentId,
+                                request
+                        )
+                );
+    }
+
+    @GetMapping("/comments/{commentId}/replies")
+    public ResponseEntity<List<CommentResponse>> getReplies(
+
+            @PathVariable UUID commentId
+
+    ) {
+
+        return ResponseEntity.ok(
+
+                commentService.getReplies(commentId)
+
+        );
     }
 
 }

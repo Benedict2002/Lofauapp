@@ -33,9 +33,8 @@ public class Post {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "group_id", nullable = true)
+    @JoinColumn(name = "group_id")
     private Group group;
 
     @OneToMany(
@@ -53,16 +52,20 @@ public class Post {
     private String description;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private PostType postType;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Category category;
 
     @Enumerated(EnumType.STRING)
-    private PostStatus status;
+    @Builder.Default
+    private PostStatus status = PostStatus.ACTIVE;
 
     @Enumerated(EnumType.STRING)
-    private Visibility visibility;
+    @Builder.Default
+    private Visibility visibility = Visibility.PUBLIC;
 
     private String locationName;
 
@@ -96,15 +99,6 @@ public class Post {
     @Builder.Default
     private Integer commentCount = 0;
 
-    @OneToMany(
-            mappedBy = "post",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
-    @Builder.Default
-    private List<PostMedia> media = new ArrayList<>();
-
-
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
@@ -115,11 +109,13 @@ public class Post {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
 
-        if(status == null)
+        if (status == null) {
             status = PostStatus.ACTIVE;
+        }
 
-        if(visibility == null)
+        if (visibility == null) {
             visibility = Visibility.PUBLIC;
+        }
     }
 
     @PreUpdate

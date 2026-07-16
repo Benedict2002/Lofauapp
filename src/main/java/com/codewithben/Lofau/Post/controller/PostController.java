@@ -7,6 +7,9 @@ import com.codewithben.Lofau.Post.enums.PostType;
 import com.codewithben.Lofau.Post.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -68,5 +71,75 @@ public class PostController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(postService.createPost(request, files));
     }
+
+    @PostMapping("/{postId}/like")
+    public ResponseEntity<PostResponse> likePost(
+            @PathVariable UUID postId
+    ) {
+
+        return ResponseEntity.ok(
+                postService.likePost(postId)
+        );
+    }
+
+    @DeleteMapping("/{postId}/like")
+    public ResponseEntity<PostResponse> unlikePost(
+            @PathVariable UUID postId
+    ) {
+
+        return ResponseEntity.ok(
+                postService.unlikePost(postId)
+        );
+
+    }
+
+    @GetMapping
+    public ResponseEntity<Page<PostResponse>> getFeed(
+            Pageable pageable
+    ) {
+
+        return ResponseEntity.ok(
+                postService.getFeed(pageable)
+        );
+    }
+
+    @GetMapping("/{postId}")
+    public ResponseEntity<PostResponse> getPost(
+            @PathVariable UUID postId
+    ) {
+
+        return ResponseEntity.ok(
+                postService.getPostById(postId)
+        );
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<Page<PostResponse>> getUserPosts(
+            @PathVariable Long userId,
+            Pageable pageable
+    ) {
+
+        return ResponseEntity.ok(
+                postService.getPostsByUser(
+                        userId,
+                        pageable
+                )
+        );
+    }
+
+    @GetMapping("/group/{groupId}")
+    public ResponseEntity<Page<PostResponse>> getGroupPosts(
+            @PathVariable UUID groupId,
+            Pageable pageable
+    ) {
+
+        return ResponseEntity.ok(
+                postService.getPostsByGroup(
+                        groupId,
+                        pageable
+                )
+        );
+    }
+
 
 }

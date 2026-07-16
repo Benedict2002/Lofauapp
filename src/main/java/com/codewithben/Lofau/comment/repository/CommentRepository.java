@@ -30,4 +30,11 @@ public interface CommentRepository extends JpaRepository<Comment, UUID> {
     long countByPost(
             Post post
     );
+
+
+
+    long countByParent(
+            Comment parent
+    );
+
 }

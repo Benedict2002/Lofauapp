@@ -47,6 +47,7 @@ public class PostResponse {
     private BigDecimal rewardAmount;
 
     private Integer likes;
+    private Boolean liked;
 
     private Integer commentCount;
 

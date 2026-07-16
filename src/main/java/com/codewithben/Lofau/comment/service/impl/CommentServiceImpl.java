@@ -10,6 +10,7 @@ import com.codewithben.Lofau.comment.entity.Comment;
 import com.codewithben.Lofau.comment.mapper.CommentMapper;
 import com.codewithben.Lofau.comment.repository.CommentRepository;
 import com.codewithben.Lofau.comment.service.CommentService;
+import com.codewithben.Lofau.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -17,6 +18,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -27,6 +29,7 @@ public class CommentServiceImpl implements CommentService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final CommentMapper commentMapper;
+    private final NotificationService notificationService;
 
     @Override
     public CommentResponse createComment(
@@ -59,6 +62,7 @@ public class CommentServiceImpl implements CommentService {
 
         post.setCommentCount(post.getCommentCount() + 1);
         postRepository.save(post);
+        notificationService.notifyPostCommented(user, post);
 
         return commentMapper.toResponse(comment);
     }
@@ -79,5 +83,61 @@ public class CommentServiceImpl implements CommentService {
                         PageRequest.of(page, size)
                 )
                 .map(commentMapper::toResponse);
+    }
+
+    @Override
+    public CommentResponse replyToComment(
+            UUID commentId,
+            CreateCommentRequest request
+    ) {
+
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null) {
+            throw new RuntimeException("User not authenticated");
+        }
+
+        String email = authentication.getName();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Comment parent = commentRepository.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("Comment not found"));
+
+        Comment reply = Comment.builder()
+                .post(parent.getPost())
+                .user(user)
+                .parent(parent)
+                .content(request.getContent())
+                .build();
+
+        reply = commentRepository.save(reply);
+
+        parent.setReplyCount(parent.getReplyCount() + 1);
+        commentRepository.save(parent);
+
+        notificationService.notifyCommentReplied(
+                user,
+                parent
+        );
+
+        return commentMapper.toResponse(reply);
+    }
+
+    @Override
+    public List<CommentResponse> getReplies(
+            UUID commentId
+    ) {
+
+        Comment parent = commentRepository.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("Comment not found"));
+
+        return commentRepository
+                .findByParentOrderByCreatedAtAsc(parent)
+                .stream()
+                .map(commentMapper::toResponse)
+                .toList();
     }
 }

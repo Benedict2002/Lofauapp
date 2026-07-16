@@ -42,6 +42,7 @@ public class MediaServiceImpl implements MediaService {
         int sortOrder = 1;
 
         for (MultipartFile file : files) {
+            System.out.println("Uploading: " + file.getOriginalFilename());
 
             Map<String, Object> uploadResult =
                     cloudinaryService.uploadFile(file);
