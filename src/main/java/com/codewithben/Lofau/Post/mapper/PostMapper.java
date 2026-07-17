@@ -4,6 +4,7 @@ import com.codewithben.Lofau.Post.dto.request.CreatePostRequest;
 import com.codewithben.Lofau.Post.dto.response.PostResponse;
 import com.codewithben.Lofau.Post.entity.Post;
 import com.codewithben.Lofau.Post.repository.PostLikeRepository;
+import com.codewithben.Lofau.Post.repository.SavedPostRepository;
 import com.codewithben.Lofau.User.userRepo.UserRepository;
 import com.codewithben.Lofau.media.enums.OwnerType;
 import com.codewithben.Lofau.media.service.MediaService;
@@ -19,6 +20,26 @@ public class PostMapper {
     private final MediaService mediaService;
     private final PostLikeRepository postLikeRepository;
     private final UserRepository userRepository;
+    private final SavedPostRepository savedPostRepository;
+
+
+    private boolean isSavedByCurrentUser(Post post) {
+
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false;
+        }
+
+        String email = authentication.getName();
+
+        return userRepository.findByEmail(email)
+                .map(user ->
+                        savedPostRepository.existsByUserAndPost(user, post)
+                )
+                .orElse(false);
+    }
 
     private boolean isLikedByCurrentUser(Post post) {
 
@@ -91,6 +112,9 @@ public class PostMapper {
                 .likes(post.getLikes())
                 .liked(isLikedByCurrentUser(post))
                 .commentCount(post.getCommentCount())
+                .saved(
+                        isSavedByCurrentUser(post)
+                )
                 .shares(post.getShares())
                 .views(post.getViews())
                 .anonymous(post.getAnonymous())

@@ -4,11 +4,13 @@ import com.codewithben.Lofau.Post.dto.request.CreatePostRequest;
 import com.codewithben.Lofau.Post.dto.response.PostResponse;
 import com.codewithben.Lofau.Post.entity.Post;
 import com.codewithben.Lofau.Post.entity.PostLike;
+import com.codewithben.Lofau.Post.entity.SavedPost;
 import com.codewithben.Lofau.Post.enums.Category;
 import com.codewithben.Lofau.Post.enums.PostType;
 import com.codewithben.Lofau.Post.mapper.PostMapper;
 import com.codewithben.Lofau.Post.repository.PostLikeRepository;
 import com.codewithben.Lofau.Post.repository.PostRepository;
+import com.codewithben.Lofau.Post.repository.SavedPostRepository;
 import com.codewithben.Lofau.Post.service.PostService;
 import com.codewithben.Lofau.search.specification.PostSpecification;
 import com.codewithben.Lofau.User.model.User;
@@ -47,6 +49,7 @@ public class PostServiceImpl implements PostService {
     private final GroupMemberRepository groupMemberRepository;
     private final PostLikeRepository postLikeRepository;
     private final NotificationService notificationService;
+    private final SavedPostRepository savedPostRepository;
 
     @Override
     public PostResponse createPost(
@@ -235,6 +238,96 @@ public class PostServiceImpl implements PostService {
         return postRepository
                 .findByGroupOrderByCreatedAtDesc(group, pageable)
                 .map(postMapper::toResponse);
+    }
+
+    @Override
+    public PostResponse savePost(UUID postId) {
+
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null) {
+            throw new RuntimeException("User not authenticated");
+        }
+
+        String email = authentication.getName();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new RuntimeException("User not found"));
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() ->
+                        new RuntimeException("Post not found"));
+
+        if (savedPostRepository.existsByUserAndPost(user, post)) {
+            return postMapper.toResponse(post);
+        }
+
+        SavedPost savedPost = SavedPost.builder()
+                .user(user)
+                .post(post)
+                .build();
+
+        savedPostRepository.save(savedPost);
+
+        return postMapper.toResponse(post);
+    }
+
+    @Override
+    public PostResponse unsavePost(UUID postId) {
+
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null) {
+            throw new RuntimeException("User not authenticated");
+        }
+
+        String email = authentication.getName();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new RuntimeException("User not found"));
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() ->
+                        new RuntimeException("Post not found"));
+
+        SavedPost savedPost = savedPostRepository
+                .findByUserAndPost(user, post)
+                .orElse(null);
+
+        if (savedPost == null) {
+            return postMapper.toResponse(post);
+        }
+
+        savedPostRepository.delete(savedPost);
+
+        return postMapper.toResponse(post);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<PostResponse> getSavedPosts(Pageable pageable) {
+
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null) {
+            throw new RuntimeException("User not authenticated");
+        }
+
+        String email = authentication.getName();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new RuntimeException("User not found"));
+
+        return savedPostRepository
+                .findByUserOrderByCreatedAtDesc(user, pageable)
+                .map(savedPost ->
+                        postMapper.toResponse(savedPost.getPost()));
     }
 
 

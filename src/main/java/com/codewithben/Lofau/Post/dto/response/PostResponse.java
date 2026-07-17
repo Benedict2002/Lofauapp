@@ -48,6 +48,7 @@ public class PostResponse {
 
     private Integer likes;
     private Boolean liked;
+    private Boolean saved;
 
     private Integer commentCount;
 

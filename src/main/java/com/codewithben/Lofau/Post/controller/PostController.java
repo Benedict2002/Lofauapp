@@ -1,5 +1,6 @@
 package com.codewithben.Lofau.Post.controller;
 
+import com.codewithben.Lofau.Auth.dto.response.ApiResponse;
 import com.codewithben.Lofau.Post.dto.request.CreatePostRequest;
 import com.codewithben.Lofau.Post.dto.response.PostResponse;
 import com.codewithben.Lofau.Post.enums.Category;
@@ -137,6 +138,51 @@ public class PostController {
                 postService.getPostsByGroup(
                         groupId,
                         pageable
+                )
+        );
+    }
+
+    @PostMapping("/{postId}/save")
+    public ResponseEntity<ApiResponse<PostResponse>> savePost(
+            @PathVariable UUID postId
+    ) {
+
+        PostResponse response = postService.savePost(postId);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Post saved successfully",
+                        response
+                )
+        );
+    }
+    @DeleteMapping("/{postId}/save")
+    public ResponseEntity<ApiResponse<PostResponse>> unsavePost(
+            @PathVariable UUID postId
+    ) {
+
+        PostResponse response = postService.unsavePost(postId);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Post removed from saved posts",
+                        response
+                )
+        );
+    }
+
+    @GetMapping("/saved")
+    public ResponseEntity<ApiResponse<Page<PostResponse>>> getSavedPosts(
+            Pageable pageable
+    ) {
+
+        Page<PostResponse> response =
+                postService.getSavedPosts(pageable);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Saved posts fetched successfully",
+                        response
                 )
         );
     }

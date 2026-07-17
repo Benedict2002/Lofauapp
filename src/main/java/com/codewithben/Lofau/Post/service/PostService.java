@@ -35,6 +35,11 @@ public interface PostService {
             UUID groupId,
             Pageable pageable
     );
+    PostResponse savePost(UUID postId);
+
+    PostResponse unsavePost(UUID postId);
+
+    Page<PostResponse> getSavedPosts(Pageable pageable);
 
 
 }
