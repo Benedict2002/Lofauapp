@@ -40,6 +40,7 @@ public interface PostService {
     PostResponse unsavePost(UUID postId);
 
     Page<PostResponse> getSavedPosts(Pageable pageable);
+    PostResponse sharePost(UUID postId);
 
 
 }

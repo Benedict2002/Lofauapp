@@ -187,5 +187,15 @@ public class PostController {
         );
     }
 
+    @PatchMapping("/{postId}/share")
+    public ResponseEntity<PostResponse> sharePost(
+            @PathVariable UUID postId
+    ) {
+
+        return ResponseEntity.ok(
+                postService.sharePost(postId)
+        );
+    }
+
 
 }

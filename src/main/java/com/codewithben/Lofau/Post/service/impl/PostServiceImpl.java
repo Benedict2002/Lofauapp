@@ -4,12 +4,14 @@ import com.codewithben.Lofau.Post.dto.request.CreatePostRequest;
 import com.codewithben.Lofau.Post.dto.response.PostResponse;
 import com.codewithben.Lofau.Post.entity.Post;
 import com.codewithben.Lofau.Post.entity.PostLike;
+import com.codewithben.Lofau.Post.entity.PostView;
 import com.codewithben.Lofau.Post.entity.SavedPost;
 import com.codewithben.Lofau.Post.enums.Category;
 import com.codewithben.Lofau.Post.enums.PostType;
 import com.codewithben.Lofau.Post.mapper.PostMapper;
 import com.codewithben.Lofau.Post.repository.PostLikeRepository;
 import com.codewithben.Lofau.Post.repository.PostRepository;
+import com.codewithben.Lofau.Post.repository.PostViewRepository;
 import com.codewithben.Lofau.Post.repository.SavedPostRepository;
 import com.codewithben.Lofau.Post.service.PostService;
 import com.codewithben.Lofau.search.specification.PostSpecification;
@@ -50,6 +52,7 @@ public class PostServiceImpl implements PostService {
     private final PostLikeRepository postLikeRepository;
     private final NotificationService notificationService;
     private final SavedPostRepository savedPostRepository;
+    private final PostViewRepository postViewRepository;
 
     @Override
     public PostResponse createPost(
@@ -198,16 +201,44 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public PostResponse getPostById(UUID postId) {
+
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null) {
+            throw new RuntimeException("User not authenticated");
+        }
+
+        String email = authentication.getName();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         Post post = postRepository.findById(postId)
                 .orElseThrow(() ->
                         new RuntimeException("Post not found"));
 
+        boolean alreadyViewed =
+                postViewRepository.existsByPostAndUser(post, user);
+
+        if (!alreadyViewed) {
+
+            PostView postView = PostView.builder()
+                    .post(post)
+                    .user(user)
+                    .build();
+
+            postViewRepository.save(postView);
+
+            post.setViews(post.getViews() + 1);
+
+            postRepository.save(post);
+        }
+
         return postMapper.toResponse(post);
     }
-
     @Override
     @Transactional(readOnly = true)
     public Page<PostResponse> getPostsByUser(
@@ -328,6 +359,20 @@ public class PostServiceImpl implements PostService {
                 .findByUserOrderByCreatedAtDesc(user, pageable)
                 .map(savedPost ->
                         postMapper.toResponse(savedPost.getPost()));
+    }
+
+    @Override
+    public PostResponse sharePost(UUID postId) {
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() ->
+                        new RuntimeException("Post not found"));
+
+        post.setShares(post.getShares() + 1);
+
+        postRepository.save(post);
+
+        return postMapper.toResponse(post);
     }
 
 
