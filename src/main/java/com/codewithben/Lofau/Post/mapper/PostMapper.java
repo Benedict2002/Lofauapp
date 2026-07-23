@@ -1,17 +1,21 @@
 package com.codewithben.Lofau.Post.mapper;
 
 import com.codewithben.Lofau.Post.dto.request.CreatePostRequest;
+import com.codewithben.Lofau.Post.dto.request.UpdatePostRequest;
 import com.codewithben.Lofau.Post.dto.response.PostResponse;
 import com.codewithben.Lofau.Post.entity.Post;
 import com.codewithben.Lofau.Post.repository.PostLikeRepository;
 import com.codewithben.Lofau.Post.repository.SavedPostRepository;
 import com.codewithben.Lofau.User.userRepo.UserRepository;
+import com.codewithben.Lofau.media.dto.response.MediaResponse;
 import com.codewithben.Lofau.media.enums.OwnerType;
 import com.codewithben.Lofau.media.service.MediaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -41,6 +45,44 @@ public class PostMapper {
                 .orElse(false);
     }
 
+    public void updateEntity(
+            Post post,
+            UpdatePostRequest request
+    ) {
+
+        if (request.getTitle() != null) {
+            post.setTitle(request.getTitle());
+        }
+
+        if (request.getDescription() != null) {
+            post.setDescription(request.getDescription());
+        }
+
+        if (request.getCategory() != null) {
+            post.setCategory(request.getCategory());
+        }
+
+        if (request.getLocationName() != null) {
+            post.setLocationName(request.getLocationName());
+        }
+
+        if (request.getLatitude() != null) {
+            post.setLatitude(request.getLatitude());
+        }
+
+        if (request.getLongitude() != null) {
+            post.setLongitude(request.getLongitude());
+        }
+
+        if (request.getRewardAmount() != null) {
+            post.setRewardAmount(request.getRewardAmount());
+        }
+
+        if (request.getAnonymous() != null) {
+            post.setAnonymous(request.getAnonymous());
+        }
+
+    }
     private boolean isLikedByCurrentUser(Post post) {
 
         Authentication authentication =
@@ -82,13 +124,32 @@ public class PostMapper {
             return null;
         }
 
+        List<MediaResponse> media =
+                mediaService.getGallery(
+                        post.getId(),
+                        OwnerType.POST
+                );
+
+        MediaResponse previewImage =
+                media.isEmpty() ? null : media.get(0);
+
         return PostResponse.builder()
                 .id(post.getId())
 
                 .userId(post.getUser().getId())
                 .username(post.getUser().getDisplayUsername())
 
-                // Group Information
+                // NEW
+                .userProfileImage(
+                        mediaService.getProfile(
+                                post.getUser().getId(),
+                                OwnerType.USER
+                        )
+                )
+
+                // NEW
+                .previewImage(previewImage)
+
                 .groupId(
                         post.getGroup() != null
                                 ? post.getGroup().getId()
@@ -111,20 +172,14 @@ public class PostMapper {
                 .rewardAmount(post.getRewardAmount())
                 .likes(post.getLikes())
                 .liked(isLikedByCurrentUser(post))
+                .saved(isSavedByCurrentUser(post))
                 .commentCount(post.getCommentCount())
-                .saved(
-                        isSavedByCurrentUser(post)
-                )
                 .shares(post.getShares())
                 .views(post.getViews())
                 .anonymous(post.getAnonymous())
+                .pinned(post.getPinned())
 
-                .media(
-                        mediaService.getMedia(
-                                post.getId(),
-                                OwnerType.POST
-                        )
-                )
+                .media(media)
 
                 .createdAt(post.getCreatedAt())
                 .build();

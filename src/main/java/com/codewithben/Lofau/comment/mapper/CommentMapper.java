@@ -2,13 +2,19 @@ package com.codewithben.Lofau.comment.mapper;
 
 import com.codewithben.Lofau.comment.dto.response.CommentResponse;
 import com.codewithben.Lofau.comment.entity.Comment;
+import com.codewithben.Lofau.media.enums.OwnerType;
+import com.codewithben.Lofau.media.service.MediaService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.stream.Collectors;
 
 @Component
+@RequiredArgsConstructor
 public class CommentMapper {
+
+    private final MediaService mediaService;
 
     public CommentResponse toResponse(Comment comment) {
 
@@ -19,10 +25,15 @@ public class CommentMapper {
         return CommentResponse.builder()
                 .id(comment.getId())
                 .userId(comment.getUser().getId())
-                .username(comment.getUser().getUsername())
+                .username(comment.getUser().getDisplayUsername())
                 .firstName(comment.getUser().getFirstName())
                 .lastName(comment.getUser().getLastName())
-                .profileImage(comment.getUser().getProfilePictureUrl())
+                .profileImage(
+                        mediaService.getProfile(
+                                comment.getUser().getId(),
+                                OwnerType.USER
+                        )
+                )
                 .content(comment.getContent())
                 .edited(comment.getEdited())
                 .likeCount(comment.getLikeCount())

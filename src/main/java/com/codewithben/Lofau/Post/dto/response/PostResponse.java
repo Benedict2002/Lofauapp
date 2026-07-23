@@ -18,37 +18,53 @@ public class PostResponse {
 
     private UUID id;
 
-    private Long userId;
+    /*
+     * Author
+     */
+    private UUID userId;
 
     private String username;
 
+    private MediaResponse userProfileImage;
+
+    /*
+     * Post Details
+     */
     private String title;
 
     private String description;
 
     private PostType postType;
 
-
-    private UUID groupId;
-
-
-    private String groupName;
-
     private Category category;
 
     private PostStatus status;
 
+    /*
+     * Group
+     */
+    private UUID groupId;
+
+    private String groupName;
+
+    /*
+     * Location
+     */
     private String locationName;
 
     private Double latitude;
 
     private Double longitude;
 
+    /*
+     * Reward
+     */
     private BigDecimal rewardAmount;
 
+    /*
+     * Statistics
+     */
     private Integer likes;
-    private Boolean liked;
-    private Boolean saved;
 
     private Integer commentCount;
 
@@ -56,11 +72,33 @@ public class PostResponse {
 
     private Integer views;
 
+    /*
+     * Current User
+     */
+    private Boolean liked;
+
+    private Boolean saved;
+
+    /*
+     * Settings
+     */
     private Boolean anonymous;
 
+    private Boolean pinned;
+
+    /*
+     * Media
+     */
+    private MediaResponse previewImage;
+
+    private Integer mediaCount;
 
     private List<MediaResponse> media;
 
+    /*
+     * Dates
+     */
     private LocalDateTime createdAt;
 
+    private LocalDateTime updatedAt;
 }

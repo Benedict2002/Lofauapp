@@ -21,4 +21,26 @@ public class UpdateGroupRequest {
 
     private Double longitude;
 
+    /*
+     * Contact
+     */
+    private String website;
+
+    private String email;
+
+    private String phoneNumber;
+
+    /*
+     * Rules
+     */
+    private String rules;
+
+    /*
+     * Settings
+     */
+    private Boolean allowMemberPosts;
+
+    private Boolean requirePostApproval;
+
+    private Boolean allowMemberInvites;
 }

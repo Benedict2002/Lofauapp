@@ -1,5 +1,6 @@
 package com.codewithben.Lofau.comment.dto.response;
 
+import com.codewithben.Lofau.media.dto.response.MediaResponse;
 import lombok.Builder;
 import lombok.Data;
 
@@ -13,7 +14,7 @@ public class CommentResponse {
 
     private UUID id;
 
-    private Long userId;
+    private UUID userId;
 
     private String username;
 
@@ -21,7 +22,7 @@ public class CommentResponse {
 
     private String lastName;
 
-    private String profileImage;
+    private MediaResponse profileImage;
 
     private String content;
 

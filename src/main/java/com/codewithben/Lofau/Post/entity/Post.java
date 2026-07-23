@@ -99,6 +99,15 @@ public class Post {
     @Builder.Default
     private Integer commentCount = 0;
 
+    @Builder.Default
+    private Boolean deleted = false;
+
+    private LocalDateTime deletedAt;
+    @Builder.Default
+    private Boolean pinned = false;
+
+    private LocalDateTime pinnedAt;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;

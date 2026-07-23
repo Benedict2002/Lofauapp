@@ -1,6 +1,7 @@
 package com.codewithben.Lofau.Post.service.impl;
 
 import com.codewithben.Lofau.Post.dto.request.CreatePostRequest;
+import com.codewithben.Lofau.Post.dto.request.UpdatePostRequest;
 import com.codewithben.Lofau.Post.dto.response.PostResponse;
 import com.codewithben.Lofau.Post.entity.Post;
 import com.codewithben.Lofau.Post.entity.PostLike;
@@ -35,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -103,14 +105,10 @@ public class PostServiceImpl implements PostService {
 
         if (files != null && !files.isEmpty()) {
 
-            mediaService.saveMedia(
-
+            mediaService.uploadGallery(
                     savedPost.getId(),
-
                     files,
-
                     OwnerType.POST
-
             );
 
         }
@@ -196,7 +194,7 @@ public class PostServiceImpl implements PostService {
     public Page<PostResponse> getFeed(Pageable pageable) {
 
         return postRepository
-                .findAllByOrderByCreatedAtDesc(pageable)
+                .findByDeletedFalseOrderByCreatedAtDesc(pageable)
                 .map(postMapper::toResponse);
     }
 
@@ -242,7 +240,7 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional(readOnly = true)
     public Page<PostResponse> getPostsByUser(
-            Long userId,
+            UUID userId,
             Pageable pageable
     ) {
 
@@ -251,7 +249,7 @@ public class PostServiceImpl implements PostService {
                         new RuntimeException("User not found"));
 
         return postRepository
-                .findByUserOrderByCreatedAtDesc(user, pageable)
+                .findByUserAndDeletedFalseOrderByCreatedAtDesc(user, pageable)
                 .map(postMapper::toResponse);
     }
 
@@ -267,7 +265,7 @@ public class PostServiceImpl implements PostService {
                         new RuntimeException("Group not found"));
 
         return postRepository
-                .findByGroupOrderByCreatedAtDesc(group, pageable)
+                .findGroupFeed(group, pageable)
                 .map(postMapper::toResponse);
     }
 
@@ -375,6 +373,91 @@ public class PostServiceImpl implements PostService {
         return postMapper.toResponse(post);
     }
 
+    @Override
+    public PostResponse updatePost(
+            UUID postId,
+            UpdatePostRequest request,
+            List<MultipartFile> files
+    ) throws IOException {
+
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null) {
+            throw new RuntimeException("User not authenticated");
+        }
+
+        String email = authentication.getName();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new RuntimeException("User not found"));
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() ->
+                        new RuntimeException("Post not found"));
+
+        // Only the owner can edit the post
+        if (!post.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException(
+                    "You are not allowed to edit this post."
+            );
+        }
+
+        postMapper.updateEntity(post, request);
+
+        post.setUpdatedAt(LocalDateTime.now());
+
+        post = postRepository.save(post);
+
+        if (files != null && !files.isEmpty()) {
+
+            mediaService.uploadGallery(
+                    post.getId(),
+                    files,
+                    OwnerType.POST
+            );
+
+        }
+
+        return postMapper.toResponse(post);
+    }
+
+
+    @Override
+    public void deletePost(UUID postId) {
+
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null) {
+            throw new RuntimeException("User not authenticated");
+        }
+
+        String email = authentication.getName();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new RuntimeException("User not found"));
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() ->
+                        new RuntimeException("Post not found"));
+
+        // Only the owner can delete
+        if (!post.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException(
+                    "You are not allowed to delete this post."
+            );
+        }
+
+        post.setDeleted(true);
+        post.setDeletedAt(LocalDateTime.now());
+
+        postRepository.save(post);
+
+    }
+
 
     private void refreshLikeCount(Post post) {
 
@@ -386,39 +469,5 @@ public class PostServiceImpl implements PostService {
 
 
 
-//    @Override
-//    public PostResponse createPost(
-//            CreatePostRequest request,
-//            List<MultipartFile> files
-//    ) throws IOException {
-//
-//        Authentication authentication =
-//                SecurityContextHolder.getContext().getAuthentication();
-//
-//        if (authentication == null || !authentication.isAuthenticated()) {
-//            throw new RuntimeException("No authenticated user found");
-//        }
-//
-//        String email = authentication.getName();
-//
-//        User user = userRepository.findByEmail(email)
-//                .orElseThrow(() -> new RuntimeException("User not found"));
-//
-//        Post post = postMapper.toEntity(request);
-//
-//        post.setUser(user);
-//
-//        Post savedPost = postRepository.save(post);
-//
-//        // Upload images after the post has been saved
-//        mediaService.saveMedia(
-//                savedPost.getId(),
-//                files,
-//                OwnerType.POST
-//        );
-//
-//        // Return the complete post with media
-//        return postMapper.toResponse(savedPost);
-//    }
 
 }

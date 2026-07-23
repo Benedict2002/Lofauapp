@@ -1,5 +1,6 @@
 package com.codewithben.Lofau.group.service;
 
+import com.codewithben.Lofau.Post.dto.response.PostResponse;
 import com.codewithben.Lofau.group.dto.request.CreateGroupRequest;
 import com.codewithben.Lofau.group.dto.request.UpdateGroupRequest;
 import com.codewithben.Lofau.group.dto.response.GroupMemberResponse;
@@ -8,6 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 public interface GroupService {
 
@@ -29,30 +31,43 @@ public interface GroupService {
 
     void approveJoinRequest(
             String groupId,
-            Long userId
+            UUID userId
     );
 
     void rejectJoinRequest(
             String groupId,
-            Long userId
+            UUID userId
     );
     void promoteToAdmin(
             String groupId,
-            Long userId
+            UUID userId
     );
 
     void demoteAdmin(
             String groupId,
-            Long userId
+            UUID userId
     );
 
     void removeMember(
             String groupId,
-            Long userId
+            UUID userId
     );
-    GroupResponse updateGroup(
+
+     GroupResponse updateGroup(
             String groupId,
-            UpdateGroupRequest request
+            UpdateGroupRequest request,
+            MultipartFile profileImage,
+            MultipartFile coverImage
+    ) throws IOException ;
+
+    PostResponse pinPost(
+            UUID groupId,
+            UUID postId
+    );
+
+    PostResponse unpinPost(
+            UUID groupId,
+            UUID postId
     );
     void deleteGroup(String groupId);
 

@@ -2,6 +2,7 @@ package com.codewithben.Lofau.Post.controller;
 
 import com.codewithben.Lofau.Auth.dto.response.ApiResponse;
 import com.codewithben.Lofau.Post.dto.request.CreatePostRequest;
+import com.codewithben.Lofau.Post.dto.request.UpdatePostRequest;
 import com.codewithben.Lofau.Post.dto.response.PostResponse;
 import com.codewithben.Lofau.Post.enums.Category;
 import com.codewithben.Lofau.Post.enums.PostType;
@@ -116,7 +117,7 @@ public class PostController {
 
     @GetMapping("/user/{userId}")
     public ResponseEntity<Page<PostResponse>> getUserPosts(
-            @PathVariable Long userId,
+            @PathVariable UUID userId,
             Pageable pageable
     ) {
 
@@ -195,6 +196,44 @@ public class PostController {
         return ResponseEntity.ok(
                 postService.sharePost(postId)
         );
+    }
+
+    @PutMapping(
+            value = "/{postId}",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ResponseEntity<PostResponse> updatePost(
+
+            @PathVariable UUID postId,
+
+            @ModelAttribute UpdatePostRequest request,
+
+            @RequestPart(required = false)
+            List<MultipartFile> files
+
+    ) throws IOException {
+
+        return ResponseEntity.ok(
+                postService.updatePost(
+                        postId,
+                        request,
+                        files
+                )
+        );
+    }
+
+    @DeleteMapping("/{postId}")
+    public ApiResponse<Void> deletePost(
+            @PathVariable UUID postId
+    ) {
+
+        postService.deletePost(postId);
+
+        return ApiResponse.success(
+                "Post deleted successfully.",
+                null
+        );
+
     }
 
 

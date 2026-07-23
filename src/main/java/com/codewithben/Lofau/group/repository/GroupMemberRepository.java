@@ -19,7 +19,7 @@ public interface GroupMemberRepository extends JpaRepository<GroupMember, UUID> 
 
     Optional<GroupMember> findByGroupIdAndUserId(
             UUID groupId,
-            Long userId
+            UUID userId
     );
 
     boolean existsByGroupAndUser(
@@ -29,7 +29,7 @@ public interface GroupMemberRepository extends JpaRepository<GroupMember, UUID> 
 
     boolean existsByGroupIdAndUserId(
             UUID groupId,
-            Long userId
+            UUID userId
     );
 
     List<GroupMember> findByGroup(
@@ -66,7 +66,7 @@ public interface GroupMemberRepository extends JpaRepository<GroupMember, UUID> 
 
     void deleteByGroupIdAndUserId(
             UUID groupId,
-            Long userId
+            UUID userId
     );
 
 }

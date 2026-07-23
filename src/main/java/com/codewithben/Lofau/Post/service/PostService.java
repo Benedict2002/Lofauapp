@@ -1,6 +1,7 @@
 package com.codewithben.Lofau.Post.service;
 
 import com.codewithben.Lofau.Post.dto.request.CreatePostRequest;
+import com.codewithben.Lofau.Post.dto.request.UpdatePostRequest;
 import com.codewithben.Lofau.Post.dto.response.PostResponse;
 import com.codewithben.Lofau.Post.enums.Category;
 import com.codewithben.Lofau.Post.enums.PostType;
@@ -27,7 +28,7 @@ public interface PostService {
     PostResponse getPostById(UUID postId);
 
     Page<PostResponse> getPostsByUser(
-            Long userId,
+            UUID userId,
             Pageable pageable
     );
 
@@ -41,6 +42,14 @@ public interface PostService {
 
     Page<PostResponse> getSavedPosts(Pageable pageable);
     PostResponse sharePost(UUID postId);
+    public PostResponse updatePost(
+            UUID postId,
+            UpdatePostRequest request,
+            List<MultipartFile> files
+    ) throws IOException;
+
+    void deletePost(UUID postId);
+
 
 
 }

@@ -6,7 +6,7 @@ import com.codewithben.Lofau.User.userRepo.UserRepository;
 import com.codewithben.Lofau.comment.entity.Comment;
 import com.codewithben.Lofau.notification.dto.response.NotificationResponse;
 import com.codewithben.Lofau.notification.entity.Notification;
-import com.codewithben.Lofau.notification.enums.NotificationType;
+import com.codewithben.Lofau.notification.factoryN.NotificationFactory;
 import com.codewithben.Lofau.notification.mapper.NotificationMapper;
 import com.codewithben.Lofau.notification.repository.NotificationRepository;
 import com.codewithben.Lofau.notification.service.NotificationService;
@@ -18,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -28,6 +29,7 @@ public class NotificationServiceImpl implements NotificationService {
     private final NotificationRepository notificationRepository;
     private final NotificationMapper notificationMapper;
     private final UserRepository userRepository;
+    private final NotificationFactory notificationFactory;
 
     private User getCurrentUser() {
 
@@ -49,15 +51,9 @@ public class NotificationServiceImpl implements NotificationService {
             return;
         }
 
-        Notification notification = Notification.builder()
-                .recipient(post.getUser())
-                .actor(actor)
-                .type(NotificationType.POST_LIKED)
-                .referenceId(post.getId())
-                .message(actor.getDisplayUsername() + " liked your post.")
-                .build();
-
-        notificationRepository.save(notification);
+        notificationRepository.save(
+                notificationFactory.createPostLiked(actor, post)
+        );
     }
 
     @Override
@@ -67,15 +63,9 @@ public class NotificationServiceImpl implements NotificationService {
             return;
         }
 
-        Notification notification = Notification.builder()
-                .recipient(post.getUser())
-                .actor(actor)
-                .type(NotificationType.POST_COMMENTED)
-                .referenceId(post.getId())
-                .message(actor.getDisplayUsername() + " commented on your post.")
-                .build();
-
-        notificationRepository.save(notification);
+        notificationRepository.save(
+                notificationFactory.createPostCommented(actor, post)
+        );
     }
 
     @Override
@@ -85,15 +75,9 @@ public class NotificationServiceImpl implements NotificationService {
             return;
         }
 
-        Notification notification = Notification.builder()
-                .recipient(comment.getUser())
-                .actor(actor)
-                .type(NotificationType.COMMENT_REPLIED)
-                .referenceId(comment.getId())
-                .message(actor.getDisplayUsername() + " replied to your comment.")
-                .build();
-
-        notificationRepository.save(notification);
+        notificationRepository.save(
+                notificationFactory.createCommentReply(actor, comment)
+        );
     }
 
     @Override
@@ -121,18 +105,19 @@ public class NotificationServiceImpl implements NotificationService {
 
         User user = getCurrentUser();
 
-        Notification notification =
-                notificationRepository.findById(notificationId)
-                        .orElseThrow(() ->
-                                new RuntimeException("Notification not found"));
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new RuntimeException("Notification not found"));
 
         if (!notification.getRecipient().getId().equals(user.getId())) {
             throw new RuntimeException("Access denied");
         }
 
-        notification.setRead(true);
+        if (!notification.getRead()) {
+            notification.setRead(true);
+            notification.setReadAt(LocalDateTime.now());
 
-        notificationRepository.save(notification);
+            notificationRepository.save(notification);
+        }
     }
 
     @Override
@@ -141,14 +126,16 @@ public class NotificationServiceImpl implements NotificationService {
         User user = getCurrentUser();
 
         notificationRepository
-                .findByRecipientOrderByCreatedAtDesc(user,
-                        Pageable.unpaged())
+                .findByRecipientOrderByCreatedAtDesc(user, Pageable.unpaged())
                 .forEach(notification -> {
 
-                    notification.setRead(true);
+                    if (!notification.getRead()) {
 
-                    notificationRepository.save(notification);
+                        notification.setRead(true);
+                        notification.setReadAt(LocalDateTime.now());
 
+                        notificationRepository.save(notification);
+                    }
                 });
     }
 

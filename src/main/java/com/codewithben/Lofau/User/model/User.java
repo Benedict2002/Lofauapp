@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "users")
@@ -25,8 +26,8 @@ public class User implements UserDetails {
 
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(nullable = false)
     private String firstName;
@@ -44,8 +45,6 @@ public class User implements UserDetails {
 
     @Column(nullable = false)
     private String passwordHash;
-
-    private String profilePictureUrl;
 
     @Column(length = 1000)
     private String bio;

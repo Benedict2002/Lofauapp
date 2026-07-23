@@ -27,4 +27,20 @@ public class CreateGroupRequest {
 
     private Double longitude;
 
+    /**
+     * Optional fields
+     */
+    private String website;
+
+    private String email;
+
+    private String phoneNumber;
+
+    private String rules;
+
+    private Boolean allowMemberPosts = true;
+
+    private Boolean requirePostApproval = false;
+
+    private Boolean allowMemberInvites = true;
 }

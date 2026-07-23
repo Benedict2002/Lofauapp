@@ -1,5 +1,7 @@
 package com.codewithben.Lofau.group.controller;
 
+import com.codewithben.Lofau.Auth.dto.response.ApiResponse;
+import com.codewithben.Lofau.Post.dto.response.PostResponse;
 import com.codewithben.Lofau.group.dto.request.CreateGroupRequest;
 import com.codewithben.Lofau.group.dto.request.UpdateGroupRequest;
 import com.codewithben.Lofau.group.dto.response.GroupMemberResponse;
@@ -16,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/groups")
@@ -135,7 +138,7 @@ public class GroupController {
 
             @PathVariable String groupId,
 
-            @PathVariable Long userId
+            @PathVariable UUID userId
 
     ) {
 
@@ -150,7 +153,7 @@ public class GroupController {
 
             @PathVariable String groupId,
 
-            @PathVariable Long userId
+            @PathVariable UUID userId
 
     ) {
 
@@ -163,7 +166,7 @@ public class GroupController {
     @PutMapping("/{groupId}/members/{userId}/promote")
     public ResponseEntity<String> promoteMember(
             @PathVariable String groupId,
-            @PathVariable Long userId
+            @PathVariable UUID userId
     ) {
 
         groupService.promoteToAdmin(groupId, userId);
@@ -174,7 +177,7 @@ public class GroupController {
     @PutMapping("/{groupId}/members/{userId}/demote")
     public ResponseEntity<String> demoteAdmin(
             @PathVariable String groupId,
-            @PathVariable Long userId
+            @PathVariable UUID userId
     ) {
 
         groupService.demoteAdmin(groupId, userId);
@@ -186,7 +189,7 @@ public class GroupController {
     @DeleteMapping("/{groupId}/members/{userId}")
     public ResponseEntity<String> removeMember(
             @PathVariable String groupId,
-            @PathVariable Long userId
+            @PathVariable UUID userId
     ) {
 
         groupService.removeMember(groupId, userId);
@@ -196,24 +199,34 @@ public class GroupController {
     }
 
 
-    @PutMapping("/{groupId}")
+    @PutMapping(
+            value = "/{groupId}",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
     public ResponseEntity<GroupResponse> updateGroup(
 
             @PathVariable String groupId,
 
-            @RequestBody UpdateGroupRequest request
+            @RequestPart("data") UpdateGroupRequest request,
 
-    ) {
+            @RequestPart(value = "profileImage", required = false)
+            MultipartFile profileImage,
+
+            @RequestPart(value = "coverImage", required = false)
+            MultipartFile coverImage
+
+    ) throws IOException {
 
         return ResponseEntity.ok(
 
                 groupService.updateGroup(
                         groupId,
-                        request
+                        request,
+                        profileImage,
+                        coverImage
                 )
 
         );
-
     }
 
     @DeleteMapping("/{groupId}")
@@ -225,6 +238,29 @@ public class GroupController {
 
         return ResponseEntity.ok("Group deleted successfully.");
 
+    }
+    @PostMapping("/{groupId}/posts/{postId}/pin")
+    public ApiResponse<PostResponse> pinPost(
+            @PathVariable UUID groupId,
+            @PathVariable UUID postId
+    ) {
+
+        return ApiResponse.success(
+                "Post pinned successfully.",
+                groupService.pinPost(groupId, postId)
+        );
+    }
+
+    @DeleteMapping("/{groupId}/posts/{postId}/pin")
+    public ApiResponse<PostResponse> unpinPost(
+            @PathVariable UUID groupId,
+            @PathVariable UUID postId
+    ) {
+
+        return ApiResponse.success(
+                "Post unpinned successfully.",
+                groupService.unpinPost(groupId, postId)
+        );
     }
 
 

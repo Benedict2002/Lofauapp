@@ -48,4 +48,16 @@ public class GroupMember {
     @Builder.Default
     private LocalDateTime joinedAt = LocalDateTime.now();
 
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    public void prePersist() {
+        joinedAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }

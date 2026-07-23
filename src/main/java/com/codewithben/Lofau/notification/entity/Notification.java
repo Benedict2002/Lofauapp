@@ -1,6 +1,7 @@
 package com.codewithben.Lofau.notification.entity;
 
 import com.codewithben.Lofau.User.model.User;
+import com.codewithben.Lofau.media.enums.OwnerType;
 import com.codewithben.Lofau.notification.enums.NotificationType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -21,43 +22,74 @@ public class Notification {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    /**
-     * User receiving the notification
+    /*
+     * Recipient
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recipient_id", nullable = false)
     private User recipient;
 
-    /**
-     * User who triggered the notification
+    /*
+     * User that triggered the notification
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "actor_id", nullable = false)
     private User actor;
 
+    /*
+     * Notification Type
+     */
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private NotificationType type;
 
-    /**
-     * ID of the related object
-     * Post ID
-     * Comment ID
-     * Group ID
+    /*
+     * Related Object
+     * (Post, Comment, Group, Event...)
      */
     @Column(nullable = false)
     private UUID referenceId;
 
-    @Column(nullable =false,length =500)
+    /*
+     * Optional deep-link route
+     * Example:
+     * /posts/{id}
+     * /groups/{id}
+     * /events/{id}
+     */
+    private String actionUrl;
+
+    /*
+     * Notification text
+     */
+    @Column(nullable = false, length = 500)
     private String message;
 
     @Builder.Default
     private Boolean read = false;
 
-    private LocalDateTime createdAt;
+    /*
+     * Optional preview image owner
+     */
+    private UUID previewOwnerId;
+
+    @Enumerated(EnumType.STRING)
+    private OwnerType previewOwnerType;
+
+    private LocalDateTime readAt;
+
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @PrePersist
     public void prePersist() {
-        createdAt = LocalDateTime.now();
+
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+
+        if (read == null) {
+            read = false;
+        }
     }
 }

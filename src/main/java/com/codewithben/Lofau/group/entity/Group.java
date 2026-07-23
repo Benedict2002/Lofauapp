@@ -1,7 +1,5 @@
 package com.codewithben.Lofau.group.entity;
 
-
-
 import com.codewithben.Lofau.User.model.User;
 import com.codewithben.Lofau.group.enums.GroupCategory;
 import com.codewithben.Lofau.group.enums.GroupStatus;
@@ -36,10 +34,6 @@ public class Group {
     @Column(length = 1000)
     private String description;
 
-    private String profileImageUrl;
-
-    private String coverImageUrl;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private GroupVisibility visibility;
@@ -57,6 +51,33 @@ public class Group {
     private Double latitude;
 
     private Double longitude;
+
+    /**
+     * Contact Information
+     */
+    private String website;
+
+    private String email;
+
+    private String phoneNumber;
+
+    /**
+     * Group Rules
+     */
+    @Column(length = 3000)
+    private String rules;
+
+    /**
+     * Group Settings
+     */
+    @Builder.Default
+    private Boolean allowMemberPosts = true;
+
+    @Builder.Default
+    private Boolean requirePostApproval = false;
+
+    @Builder.Default
+    private Boolean allowMemberInvites = true;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)
@@ -92,5 +113,6 @@ public class Group {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
+    @Builder.Default
     private List<GroupMember> members = new ArrayList<>();
 }

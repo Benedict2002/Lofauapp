@@ -7,6 +7,8 @@ public enum OwnerType {
     EVENT,
     GROUP,
     EMERGENCY,
-    ADVERTISEMENT
+    ADVERTISEMENT,
+    BUSINESS,
+    ORGANIZATION
 
 }
