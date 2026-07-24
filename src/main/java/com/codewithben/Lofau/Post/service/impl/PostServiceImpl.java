@@ -15,6 +15,8 @@ import com.codewithben.Lofau.Post.repository.PostRepository;
 import com.codewithben.Lofau.Post.repository.PostViewRepository;
 import com.codewithben.Lofau.Post.repository.SavedPostRepository;
 import com.codewithben.Lofau.Post.service.PostService;
+import com.codewithben.Lofau.notification.dto.NotificationRequest;
+import com.codewithben.Lofau.notification.enums.NotificationType;
 import com.codewithben.Lofau.search.specification.PostSpecification;
 import com.codewithben.Lofau.User.model.User;
 import com.codewithben.Lofau.User.userRepo.UserRepository;
@@ -148,7 +150,28 @@ public class PostServiceImpl implements PostService {
 
         refreshLikeCount(post);
 
-        notificationService.notifyPostLiked(user, post);
+        notificationService.notify(
+
+                NotificationRequest.builder()
+
+                        .recipient(post.getUser())
+                        .actor(user)
+
+                        .type(NotificationType.POST_LIKED)
+
+                        .referenceId(post.getId())
+
+                        .ownerId(post.getId())
+                        .ownerType(OwnerType.POST)
+
+                        .message(
+                                user.getDisplayUsername()
+                                        + " liked your post."
+                        )
+
+                        .build()
+
+        );
 
         return postMapper.toResponse(post);
     }

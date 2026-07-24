@@ -5,17 +5,13 @@ import com.codewithben.Lofau.Post.enums.PostStatus;
 import com.codewithben.Lofau.Post.enums.PostType;
 import com.codewithben.Lofau.Post.enums.Visibility;
 import com.codewithben.Lofau.User.model.User;
-import com.codewithben.Lofau.comment.entity.Comment;
 import com.codewithben.Lofau.group.entity.Group;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
-
 @Entity
 @Table(name = "posts")
 @Getter
@@ -37,13 +33,7 @@ public class Post {
     @JoinColumn(name = "group_id")
     private Group group;
 
-    @OneToMany(
-            mappedBy = "post",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
-    @Builder.Default
-    private List<Comment> comments = new ArrayList<>();
+
 
     @Column(length = 150)
     private String title;

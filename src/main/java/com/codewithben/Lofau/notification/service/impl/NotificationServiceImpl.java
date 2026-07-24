@@ -4,6 +4,7 @@ import com.codewithben.Lofau.Post.entity.Post;
 import com.codewithben.Lofau.User.model.User;
 import com.codewithben.Lofau.User.userRepo.UserRepository;
 import com.codewithben.Lofau.comment.entity.Comment;
+import com.codewithben.Lofau.notification.dto.NotificationRequest;
 import com.codewithben.Lofau.notification.dto.response.NotificationResponse;
 import com.codewithben.Lofau.notification.entity.Notification;
 import com.codewithben.Lofau.notification.factoryN.NotificationFactory;
@@ -45,40 +46,22 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public void notifyPostLiked(User actor, Post post) {
+    public void notify(
+            NotificationRequest request
+    ) {
 
-        if (actor.getId().equals(post.getUser().getId())) {
+        if (request.getRecipient()
+                .getId()
+                .equals(request.getActor().getId())) {
             return;
         }
 
         notificationRepository.save(
-                notificationFactory.createPostLiked(actor, post)
+                notificationFactory.create(request)
         );
     }
 
-    @Override
-    public void notifyPostCommented(User actor, Post post) {
 
-        if (actor.getId().equals(post.getUser().getId())) {
-            return;
-        }
-
-        notificationRepository.save(
-                notificationFactory.createPostCommented(actor, post)
-        );
-    }
-
-    @Override
-    public void notifyCommentReplied(User actor, Comment comment) {
-
-        if (actor.getId().equals(comment.getUser().getId())) {
-            return;
-        }
-
-        notificationRepository.save(
-                notificationFactory.createCommentReply(actor, comment)
-        );
-    }
 
     @Override
     @Transactional(readOnly = true)

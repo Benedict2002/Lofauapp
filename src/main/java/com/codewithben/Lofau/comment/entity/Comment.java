@@ -1,7 +1,7 @@
 package com.codewithben.Lofau.comment.entity;
 
-import com.codewithben.Lofau.Post.entity.Post;
 import com.codewithben.Lofau.User.model.User;
+import com.codewithben.Lofau.media.enums.OwnerType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -11,7 +11,15 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "comments")
+@Table(
+        name = "comments",
+        indexes = {
+                @Index(name = "idx_comment_owner",
+                        columnList = "ownerId, ownerType"),
+                @Index(name = "idx_comment_parent",
+                        columnList = "parent_comment_id")
+        }
+)
 @Getter
 @Setter
 @Builder
@@ -23,20 +31,21 @@ public class Comment {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id", nullable = false)
-    private Post post;
+    @Column(nullable = false)
+    private UUID ownerId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private OwnerType ownerType;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // Parent comment (null if top-level comment)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_comment_id")
     private Comment parent;
 
-    // Replies
     @OneToMany(
             mappedBy = "parent",
             cascade = CascadeType.ALL,
@@ -67,7 +76,7 @@ public class Comment {
     @PrePersist
     public void prePersist() {
         createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
+        updatedAt = createdAt;
     }
 
     @PreUpdate

@@ -94,6 +94,7 @@ public class PostResponse {
     private Integer mediaCount;
 
     private List<MediaResponse> media;
+    
 
     /*
      * Dates

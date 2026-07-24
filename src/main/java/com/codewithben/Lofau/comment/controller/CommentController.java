@@ -3,6 +3,7 @@ package com.codewithben.Lofau.comment.controller;
 import com.codewithben.Lofau.comment.dto.request.CreateCommentRequest;
 import com.codewithben.Lofau.comment.dto.response.CommentResponse;
 import com.codewithben.Lofau.comment.service.CommentService;
+import com.codewithben.Lofau.media.enums.OwnerType;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -20,10 +21,12 @@ public class CommentController {
 
     private final CommentService commentService;
 
-    @PostMapping("/posts/{postId}/comments")
+    @PostMapping("/{ownerType}/{ownerId}")
     public ResponseEntity<CommentResponse> createComment(
 
-            @PathVariable UUID postId,
+            @PathVariable OwnerType ownerType,
+
+            @PathVariable UUID ownerId,
 
             @Valid
             @RequestBody CreateCommentRequest request
@@ -31,14 +34,21 @@ public class CommentController {
     ) {
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(commentService.createComment(postId, request));
-
+                .body(
+                        commentService.createComment(
+                                ownerId,
+                                ownerType,
+                                request
+                        )
+                );
     }
 
-    @GetMapping("/posts/{postId}/comments")
+    @GetMapping("/{ownerType}/{ownerId}")
     public ResponseEntity<Page<CommentResponse>> getComments(
 
-            @PathVariable UUID postId,
+            @PathVariable OwnerType ownerType,
+
+            @PathVariable UUID ownerId,
 
             @RequestParam(defaultValue = "0") int page,
 
@@ -49,16 +59,16 @@ public class CommentController {
         return ResponseEntity.ok(
 
                 commentService.getComments(
-                        postId,
+                        ownerId,
+                        ownerType,
                         page,
                         size
                 )
 
         );
-
     }
 
-    @PostMapping("/comments/{commentId}/reply")
+    @PostMapping("/{commentId}/reply")
     public ResponseEntity<CommentResponse> replyToComment(
 
             @PathVariable UUID commentId,
@@ -68,8 +78,7 @@ public class CommentController {
 
     ) {
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
+        return ResponseEntity.status(HttpStatus.CREATED)
                 .body(
                         commentService.replyToComment(
                                 commentId,
@@ -78,7 +87,7 @@ public class CommentController {
                 );
     }
 
-    @GetMapping("/comments/{commentId}/replies")
+    @GetMapping("/{commentId}/replies")
     public ResponseEntity<List<CommentResponse>> getReplies(
 
             @PathVariable UUID commentId
@@ -86,9 +95,7 @@ public class CommentController {
     ) {
 
         return ResponseEntity.ok(
-
                 commentService.getReplies(commentId)
-
         );
     }
 

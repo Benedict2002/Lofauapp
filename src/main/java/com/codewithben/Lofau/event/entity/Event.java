@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
+@Table(name = "events")
 @Getter
 @Setter
 @Builder
@@ -18,10 +19,10 @@ import java.util.UUID;
 public class Event {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 150)
     private String title;
 
     @Column(columnDefinition = "TEXT")
@@ -42,37 +43,104 @@ public class Event {
     private Integer capacity;
 
     @Builder.Default
+    @Column(nullable = false)
     private Integer goingCount = 0;
 
     @Builder.Default
+    @Column(nullable = false)
     private Integer interestedCount = 0;
 
     @Builder.Default
+    @Column(nullable = false)
+    private Integer viewCount = 0;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private Integer shareCount = 0;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private Boolean commentsEnabled = true;
+
+    @Builder.Default
+    @Column(nullable = false)
     private Boolean active = true;
 
+    @Builder.Default
+    @Column(nullable = false)
+    private Boolean cancelled = false;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private Boolean verified = false;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private Boolean featured = false;
+
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    @Column(nullable = false)
+    private EventStatus status = EventStatus.UPCOMING;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "group_id", nullable = false)
     private Group group;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "created_by_id", nullable = false)
     private User createdBy;
-    @Enumerated(EnumType.STRING)
-    @Builder.Default
-    private EventStatus status = EventStatus.UPCOMING;
 
     private LocalDateTime createdAt;
+    @Builder.Default
+    private Integer likeCount = 0;
+    private Integer commentCount;
+
+
+
+
+
 
     private LocalDateTime updatedAt;
 
     @PrePersist
-    void prePersist() {
+    public void prePersist() {
+
         createdAt = LocalDateTime.now();
         updatedAt = createdAt;
+
+        if (likeCount == null) {
+            likeCount = 0;
+        }
+
+        if (commentCount == null) {
+            commentCount = 0;
+        }
+
+        if (viewCount == null) {
+            viewCount = 0;
+        }
+
+        if (shareCount == null) {
+            shareCount = 0;
+        }
+
+        if (goingCount == null) {
+            goingCount = 0;
+        }
+
+        if (interestedCount == null) {
+            interestedCount = 0;
+        }
+        if (commentsEnabled == null) {
+            commentsEnabled = true;
+        }
     }
 
     @PreUpdate
-    void preUpdate() {
+    public void preUpdate() {
         updatedAt = LocalDateTime.now();
     }
+
+
 }

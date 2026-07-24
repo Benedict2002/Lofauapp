@@ -118,7 +118,9 @@ public class PostMapper {
                 .build();
     }
 
+
     public PostResponse toResponse(Post post) {
+
 
         if (post == null) {
             return null;
@@ -129,9 +131,12 @@ public class PostMapper {
                         post.getId(),
                         OwnerType.POST
                 );
+        
 
         MediaResponse previewImage =
-                media.isEmpty() ? null : media.get(0);
+                media.isEmpty()
+                        ? null
+                        : media.get(0);
 
         return PostResponse.builder()
                 .id(post.getId())
@@ -139,47 +144,44 @@ public class PostMapper {
                 .userId(post.getUser().getId())
                 .username(post.getUser().getDisplayUsername())
 
-                // NEW
+                // profile image
                 .userProfileImage(
                         mediaService.getProfile(
                                 post.getUser().getId(),
                                 OwnerType.USER
                         )
                 )
-
-                // NEW
                 .previewImage(previewImage)
 
-                .groupId(
-                        post.getGroup() != null
-                                ? post.getGroup().getId()
-                                : null
-                )
-                .groupName(
-                        post.getGroup() != null
-                                ? post.getGroup().getName()
-                                : null
-                )
+                .groupId(post.getGroup() != null ? post.getGroup().getId() : null)
+                .groupName(post.getGroup() != null ? post.getGroup().getName() : null)
 
                 .title(post.getTitle())
                 .description(post.getDescription())
                 .postType(post.getPostType())
                 .category(post.getCategory())
                 .status(post.getStatus())
+
                 .locationName(post.getLocationName())
                 .latitude(post.getLatitude())
                 .longitude(post.getLongitude())
+
                 .rewardAmount(post.getRewardAmount())
+
                 .likes(post.getLikes())
                 .liked(isLikedByCurrentUser(post))
                 .saved(isSavedByCurrentUser(post))
+
                 .commentCount(post.getCommentCount())
                 .shares(post.getShares())
                 .views(post.getViews())
+
                 .anonymous(post.getAnonymous())
                 .pinned(post.getPinned())
 
                 .media(media)
+
+                .mediaCount(media.size())
 
                 .createdAt(post.getCreatedAt())
                 .build();
