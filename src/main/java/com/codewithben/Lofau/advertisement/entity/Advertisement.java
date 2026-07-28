@@ -4,6 +4,7 @@ import com.codewithben.Lofau.User.model.User;
 import com.codewithben.Lofau.advertisement.enums.AdvertisementPlacement;
 import com.codewithben.Lofau.advertisement.enums.AdvertisementStatus;
 import com.codewithben.Lofau.advertisement.enums.AdvertisementType;
+import com.codewithben.Lofau.media.enums.MediaType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -142,6 +143,13 @@ public class Advertisement {
     @Builder.Default
     @Column(nullable = false)
     private Boolean paused = false;
+
+    private String mediaUrl;
+
+    private String mediaPublicId;
+
+    @Enumerated(EnumType.STRING)
+    private MediaType mediaType;
 
 
 

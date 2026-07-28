@@ -5,6 +5,7 @@ import com.codewithben.Lofau.advertisement.enums.AdvertisementType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 
@@ -40,4 +41,10 @@ public class CreateAdvertisementRequest {
     private LocalDateTime startDate;
 
     private LocalDateTime endDate;
+
+    /**
+     * One creative:
+     * Image, GIF or Video
+     */
+    private MultipartFile media;
 }

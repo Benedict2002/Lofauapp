@@ -287,6 +287,43 @@ public class MediaServiceImpl implements MediaService {
         return null;
     }
 
+    @Override
+    public MediaResponse uploadAdvertisement(
+            UUID advertisementId,
+            MultipartFile file
+
+    ) throws IOException {
+        System.out.println("Advertisement ID: " + advertisementId);
+        System.out.println("File: " + file.getOriginalFilename());
+
+
+        return uploadSingleMedia(
+                advertisementId,
+                file,
+                OwnerType.ADVERTISEMENT,
+                MediaPurpose.ADVERTISEMENT
+
+        );
+
+
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MediaResponse getAdvertisement(
+            UUID advertisementId
+    ) {
+
+        return mediaRepository
+                .findByOwnerIdAndOwnerTypeAndPurposeAndDeletedFalse(
+                        advertisementId,
+                        OwnerType.ADVERTISEMENT,
+                        MediaPurpose.ADVERTISEMENT
+                )
+                .map(this::buildResponse)
+                .orElse(null);
+    }
+
 
 //    /**
 //     * Existing method - keeps all current modules working.

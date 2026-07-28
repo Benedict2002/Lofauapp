@@ -17,6 +17,7 @@ import com.codewithben.Lofau.advertisement.validator.AdvertisementValidator;
 import com.codewithben.Lofau.advertisement.analytics.AdvertisementAnalyticsService;
 import com.codewithben.Lofau.advertisement.placement.AdvertisementPlacementService;
 import com.codewithben.Lofau.advertisement.targeting.AdvertisementTargetingService;
+import com.codewithben.Lofau.media.dto.response.MediaResponse;
 import com.codewithben.Lofau.media.service.MediaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -68,23 +69,64 @@ public class AdvertisementServiceImpl
             CreateAdvertisementRequest request
     ) {
 
+        // Get the currently authenticated user
         User advertiser = getCurrentUser();
 
+        // Convert request into Advertisement entity
         Advertisement advertisement =
                 advertisementMapper.toEntity(request);
 
+        // Set the owner
         advertisement.setAdvertiser(advertiser);
 
+        // Validate advertisement before saving
         advertisementValidator.validateForCreation(advertisement);
 
+        // Save advertisement first to generate its UUID
         Advertisement savedAdvertisement =
                 advertisementRepository.save(advertisement);
 
         /*
-         * Upload media if provided
-         * (We'll implement this once Media is integrated)
+         * Upload advertisement media if provided.
+         * One advertisement supports one media file
+         * (image, gif or video).
          */
+        System.out.println("=======================================");
+        System.out.println("Advertisement created: " + savedAdvertisement.getId());
 
+        if (request.getMedia() == null) {
+            System.out.println("MEDIA IS NULL");
+        } else {
+            System.out.println("Media name: " + request.getMedia().getOriginalFilename());
+            System.out.println("Media size: " + request.getMedia().getSize());
+        }
+
+        if (request.getMedia() != null &&
+                !request.getMedia().isEmpty()) {
+
+            try {
+
+                MediaResponse uploaded =
+                        mediaService.uploadAdvertisement(
+                                savedAdvertisement.getId(),
+                                request.getMedia()
+                        );
+
+                System.out.println("UPLOAD SUCCESS");
+                System.out.println(uploaded);
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+                throw new RuntimeException(
+                        "Failed to upload advertisement media.",
+                        e
+                );
+            }
+        }
+
+        //Return advertisement response
         return advertisementMapper.toResponse(savedAdvertisement);
     }
 

@@ -4,6 +4,7 @@ import com.codewithben.Lofau.advertisement.enums.AdvertisementPlacement;
 import com.codewithben.Lofau.advertisement.enums.AdvertisementStatus;
 import com.codewithben.Lofau.advertisement.enums.AdvertisementType;
 import lombok.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 
@@ -39,4 +40,8 @@ public class UpdateAdvertisementRequest {
     private LocalDateTime startDate;
 
     private LocalDateTime endDate;
+    /**
+     * Optional replacement media.
+     */
+    private MultipartFile media;
 }

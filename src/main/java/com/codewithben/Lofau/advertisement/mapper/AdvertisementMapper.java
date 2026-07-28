@@ -110,60 +110,45 @@ public class AdvertisementMapper {
             Advertisement advertisement
     ) {
 
-        List<MediaResponse> gallery =
-                mediaService.getGallery(
-                        advertisement.getId(),
-                        OwnerType.ADVERTISEMENT
+        // Retrieve the advertisement media (single image/video/gif)
+        MediaResponse media =
+                mediaService.getAdvertisement(
+                        advertisement.getId()
                 );
-
-        MediaResponse coverImage =
-                mediaService.getCover(
-                        advertisement.getId(),
-                        OwnerType.ADVERTISEMENT
-                );
-
-        MediaResponse previewImage =
-                !gallery.isEmpty()
-                        ? gallery.get(0)
-                        : coverImage;
 
         return AdvertisementResponse.builder()
 
+                // Advertisement Details
                 .id(advertisement.getId())
-
                 .title(advertisement.getTitle())
                 .description(advertisement.getDescription())
-
                 .websiteUrl(advertisement.getWebsiteUrl())
                 .callToAction(advertisement.getCallToAction())
 
+                // Advertisement Configuration
                 .type(advertisement.getType())
                 .placement(advertisement.getPlacement())
                 .status(advertisement.getStatus())
-
                 .priority(advertisement.getPriority())
 
+                // Analytics
                 .impressions(advertisement.getImpressions())
                 .clicks(advertisement.getClicks())
 
+                // Budget
                 .dailyLimit(advertisement.getDailyLimit())
                 .totalBudget(advertisement.getTotalBudget())
                 .spentBudget(advertisement.getSpentBudget())
 
+                // Status
                 .active(advertisement.getActive())
                 .approved(advertisement.getApproved())
 
-                // Advertiser
-
-                .advertiserId(
-                        advertisement.getAdvertiser().getId()
-                )
-
+                // Advertiser Information
+                .advertiserId(advertisement.getAdvertiser().getId())
                 .advertiserUsername(
-                        advertisement.getAdvertiser()
-                                .getDisplayUsername()
+                        advertisement.getAdvertiser().getDisplayUsername()
                 )
-
                 .advertiserProfileImage(
                         mediaService.getProfile(
                                 advertisement.getAdvertiser().getId(),
@@ -171,16 +156,12 @@ public class AdvertisementMapper {
                         )
                 )
 
-                // Media
+                // Advertisement Medi
+                .media(media)
 
-                .coverImage(coverImage)
-                .previewImage(previewImage)
-                .gallery(gallery)
-                .mediaCount(gallery.size())
-
+                // Dates
                 .startDate(advertisement.getStartDate())
                 .endDate(advertisement.getEndDate())
-
                 .createdAt(advertisement.getCreatedAt())
                 .updatedAt(advertisement.getUpdatedAt())
 

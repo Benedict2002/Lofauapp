@@ -6,6 +6,7 @@ import com.codewithben.Lofau.advertisement.dto.response.AdvertisementDashboardRe
 import com.codewithben.Lofau.advertisement.dto.response.AdvertisementResponse;
 import com.codewithben.Lofau.advertisement.dto.response.AdvertisementStatisticsResponse;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -13,12 +14,14 @@ public interface AdvertisementService {
 
     AdvertisementResponse createAdvertisement(
             CreateAdvertisementRequest request
-    );
+    ) throws IOException;
 
     AdvertisementResponse updateAdvertisement(
             UUID advertisementId,
             UpdateAdvertisementRequest request
-    );
+    ) throws IOException;
+
+
 
     AdvertisementResponse getAdvertisement(
             UUID advertisementId

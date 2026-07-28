@@ -67,4 +67,12 @@ public interface MediaService {
     void deleteMedia(UUID mediaId);
     MediaResponse getMediaById(UUID mediaId);
 
+    MediaResponse uploadAdvertisement(
+            UUID advertisementId,
+            MultipartFile file
+    ) throws IOException;
+    MediaResponse getAdvertisement(
+            UUID advertisementId
+    );
+
 }
