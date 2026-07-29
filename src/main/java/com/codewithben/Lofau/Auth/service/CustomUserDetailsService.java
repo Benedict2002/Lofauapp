@@ -1,5 +1,6 @@
 package com.codewithben.Lofau.Auth.service;
 
+import com.codewithben.Lofau.Exception.user.UserException;
 import com.codewithben.Lofau.User.userRepo.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.*;
@@ -13,10 +14,10 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email)
-            throws UsernameNotFoundException {
+            throws UserException {
 
         return userRepository.findByEmail(email)
                 .orElseThrow(() ->
-                        new UsernameNotFoundException("User not found"));
+                        new UserException("User not found"));
     }
 }

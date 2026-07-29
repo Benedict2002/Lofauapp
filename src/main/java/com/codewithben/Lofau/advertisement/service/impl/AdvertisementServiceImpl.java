@@ -25,6 +25,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -67,7 +68,7 @@ public class AdvertisementServiceImpl
     @Transactional
     public AdvertisementResponse createAdvertisement(
             CreateAdvertisementRequest request
-    ) {
+    ) throws IOException {
 
         // Get the currently authenticated user
         User advertiser = getCurrentUser();
@@ -91,39 +92,11 @@ public class AdvertisementServiceImpl
          * One advertisement supports one media file
          * (image, gif or video).
          */
-        System.out.println("=======================================");
-        System.out.println("Advertisement created: " + savedAdvertisement.getId());
-
-        if (request.getMedia() == null) {
-            System.out.println("MEDIA IS NULL");
-        } else {
-            System.out.println("Media name: " + request.getMedia().getOriginalFilename());
-            System.out.println("Media size: " + request.getMedia().getSize());
-        }
-
-        if (request.getMedia() != null &&
-                !request.getMedia().isEmpty()) {
-
-            try {
-
-                MediaResponse uploaded =
-                        mediaService.uploadAdvertisement(
-                                savedAdvertisement.getId(),
-                                request.getMedia()
-                        );
-
-                System.out.println("UPLOAD SUCCESS");
-                System.out.println(uploaded);
-
-            } catch (Exception e) {
-
-                e.printStackTrace();
-
-                throw new RuntimeException(
-                        "Failed to upload advertisement media.",
-                        e
-                );
-            }
+        if (request.getMedia() != null && !request.getMedia().isEmpty()) {
+            mediaService.uploadAdvertisement(
+                    savedAdvertisement.getId(),
+                    request.getMedia()
+            );
         }
 
         //Return advertisement response
@@ -135,7 +108,7 @@ public class AdvertisementServiceImpl
     public AdvertisementResponse updateAdvertisement(
             UUID advertisementId,
             UpdateAdvertisementRequest request
-    ) {
+    ) throws IOException {
 
         Advertisement advertisement =
                 findAdvertisement(advertisementId);
@@ -170,10 +143,17 @@ public class AdvertisementServiceImpl
                 advertisementRepository.save(
                         advertisement
                 );
+        if (request.getMedia() != null && !request.getMedia().isEmpty()) {
+            mediaService.uploadAdvertisement(
+                    advertisement.getId(),
+                    request.getMedia()
+            );
+        }
 
         return advertisementMapper.toResponse(
                 updatedAdvertisement
         );
+
     }
 
     @Override

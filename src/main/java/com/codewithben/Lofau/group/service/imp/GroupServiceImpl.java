@@ -1,11 +1,13 @@
 package com.codewithben.Lofau.group.service.imp;
 
+import com.codewithben.Lofau.Exception.group.GroupException;
 import com.codewithben.Lofau.Post.dto.response.PostResponse;
 import com.codewithben.Lofau.Post.entity.Post;
 import com.codewithben.Lofau.Post.mapper.PostMapper;
 import com.codewithben.Lofau.Post.repository.PostRepository;
 import com.codewithben.Lofau.User.model.User;
 import com.codewithben.Lofau.User.userRepo.UserRepository;
+import com.codewithben.Lofau.User.userService.CurrentUserService;
 import com.codewithben.Lofau.group.dto.request.CreateGroupRequest;
 import com.codewithben.Lofau.group.dto.request.UpdateGroupRequest;
 import com.codewithben.Lofau.group.dto.response.GroupMemberResponse;
@@ -48,6 +50,7 @@ public class GroupServiceImpl implements GroupService {
     private final MediaService mediaService;
     private final PostRepository postRepository;
     private final PostMapper postMapper;
+    private final CurrentUserService currentUserService;
 
 
     @Override
@@ -57,20 +60,10 @@ public class GroupServiceImpl implements GroupService {
             MultipartFile coverImage
     ) throws IOException {
 
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new RuntimeException("User is not authenticated");
-        }
-
-        String email = authentication.getName();
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = currentUserService.getCurrentUser();
 
         if (groupRepository.existsByNameIgnoreCase(request.getName())) {
-            throw new RuntimeException("A group with this name already exists.");
+            throw new GroupException("A group with this name already exists.");
         }
 
         String slug = SlugUtil.generate(request.getName());
@@ -163,23 +156,17 @@ public class GroupServiceImpl implements GroupService {
     public GroupResponse getGroupById(String id) {
 
         Group group = groupRepository.findById(UUID.fromString(id))
-                .orElseThrow(() -> new RuntimeException("Group not found"));
+                .orElseThrow(() -> new GroupException("Group not found"));
 
         return groupMapper.toResponse(group);
     }
 
     private GroupMember getCurrentMember(Group group) {
 
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-
-        String email = authentication.getName();
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = currentUserService.getCurrentUser();
 
         return groupMemberRepository.findByGroupAndUser(group, user)
-                .orElseThrow(() -> new RuntimeException("You are not a member of this group"));
+                .orElseThrow(() -> new GroupException("You are not a member of this group"));
 
     }
 
@@ -190,7 +177,7 @@ public class GroupServiceImpl implements GroupService {
         if (currentMember.getRole() != GroupRole.OWNER &&
                 currentMember.getRole() != GroupRole.ADMIN) {
 
-            throw new RuntimeException(
+            throw new GroupException(
                     "Only OWNER or ADMIN can perform this action."
             );
         }
@@ -200,23 +187,13 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public GroupResponse joinGroup(String groupId) {
 
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new RuntimeException("User is not authenticated");
-        }
-
-        String email = authentication.getName();
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = currentUserService.getCurrentUser();
 
         Group group = groupRepository.findById(UUID.fromString(groupId))
                 .orElseThrow(() -> new RuntimeException("Group not found"));
 
         if (groupMemberRepository.existsByGroupAndUser(group, user)) {
-            throw new RuntimeException("You are already a member of this group.");
+            throw new GroupException("You are already a member of this group.");
         }
 
         MemberStatus status = group.getVisibility() == GroupVisibility.PUBLIC
@@ -255,28 +232,18 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public void leaveGroup(String groupId) {
 
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new RuntimeException("User not authenticated");
-        }
-
-        String email = authentication.getName();
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = currentUserService.getCurrentUser();
 
         Group group = groupRepository.findById(UUID.fromString(groupId))
-                .orElseThrow(() -> new RuntimeException("Group not found"));
+                .orElseThrow(() -> new GroupException("Group not found"));
 
         GroupMember member = groupMemberRepository
                 .findByGroupAndUser(group, user)
                 .orElseThrow(() ->
-                        new RuntimeException("You are not a member of this group."));
+                        new GroupException("You are not a member of this group."));
 
         if (member.getRole() == GroupRole.OWNER) {
-            throw new RuntimeException(
+            throw new GroupException(
                     "Group owner cannot leave the group."
             );
         }
@@ -329,7 +296,7 @@ public class GroupServiceImpl implements GroupService {
     public List<GroupMemberResponse> getPendingRequests(String groupId) {
 
         Group group = groupRepository.findById(UUID.fromString(groupId))
-                .orElseThrow(() -> new RuntimeException("Group not found"));
+                .orElseThrow(() -> new GroupException("Group not found"));
 
         List<GroupMember> requests =
                 groupMemberRepository.findByGroupAndStatus(
@@ -363,13 +330,13 @@ public class GroupServiceImpl implements GroupService {
     ) {
 
         Group group = groupRepository.findById(UUID.fromString(groupId))
-                .orElseThrow(() -> new RuntimeException("Group not found"));
+                .orElseThrow(() -> new GroupException("Group not found"));
 
         validateGroupAdmin(group);
 
         GroupMember member = groupMemberRepository
                 .findByGroupIdAndUserId(group.getId(), userId)
-                .orElseThrow(() -> new RuntimeException("Request not found"));
+                .orElseThrow(() -> new GroupException("Request not found"));
 
         member.setStatus(MemberStatus.APPROVED);
 
@@ -392,13 +359,13 @@ public class GroupServiceImpl implements GroupService {
     ) {
 
         Group group = groupRepository.findById(UUID.fromString(groupId))
-                .orElseThrow(() -> new RuntimeException("Group not found"));
+                .orElseThrow(() -> new GroupException("Group not found"));
 
         validateGroupAdmin(group);
 
         GroupMember member = groupMemberRepository
                 .findByGroupIdAndUserId(group.getId(), userId)
-                .orElseThrow(() -> new RuntimeException("Request not found"));
+                .orElseThrow(() -> new GroupException("Request not found"));
 
         groupMemberRepository.delete(member);
     }
@@ -413,7 +380,7 @@ public class GroupServiceImpl implements GroupService {
                         userId
                 )
                 .orElseThrow(() ->
-                        new RuntimeException("Member not found"));
+                        new GroupException("Member not found"));
     }
 
 
@@ -426,14 +393,14 @@ public class GroupServiceImpl implements GroupService {
         Group group = groupRepository.findById(
                         UUID.fromString(groupId))
                 .orElseThrow(() ->
-                        new RuntimeException("Group not found"));
+                        new GroupException("Group not found"));
 
         validateGroupAdmin(group);
 
         GroupMember member = getMember(group, userId);
 
         if (member.getRole() == GroupRole.OWNER) {
-            throw new RuntimeException(
+            throw new GroupException(
                     "Owner cannot be promoted."
             );
         }
@@ -452,14 +419,14 @@ public class GroupServiceImpl implements GroupService {
         Group group = groupRepository.findById(
                         UUID.fromString(groupId))
                 .orElseThrow(() ->
-                        new RuntimeException("Group not found"));
+                        new GroupException("Group not found"));
 
         validateGroupAdmin(group);
 
         GroupMember member = getMember(group, userId);
 
         if (member.getRole() == GroupRole.OWNER) {
-            throw new RuntimeException(
+            throw new GroupException(
                     "Owner cannot be demoted."
             );
         }
@@ -478,14 +445,14 @@ public class GroupServiceImpl implements GroupService {
         Group group = groupRepository.findById(
                         UUID.fromString(groupId))
                 .orElseThrow(() ->
-                        new RuntimeException("Group not found"));
+                        new GroupException("Group not found"));
 
         validateGroupAdmin(group);
 
         GroupMember member = getMember(group, userId);
 
         if (member.getRole() == GroupRole.OWNER) {
-            throw new RuntimeException(
+            throw new GroupException(
                     "Owner cannot be removed."
             );
         }
@@ -513,14 +480,14 @@ public class GroupServiceImpl implements GroupService {
         Group group = groupRepository.findById(
                         UUID.fromString(groupId))
                 .orElseThrow(() ->
-                        new RuntimeException("Group not found"));
+                        new GroupException("Group not found"));
 
         GroupMember currentMember = getCurrentMember(group);
 
         if (currentMember.getRole() != GroupRole.OWNER &&
                 currentMember.getRole() != GroupRole.ADMIN) {
 
-            throw new RuntimeException(
+            throw new GroupException(
                     "Only OWNER or ADMIN can update this group."
             );
         }
@@ -646,14 +613,14 @@ public class GroupServiceImpl implements GroupService {
         GroupMember member = groupMemberRepository
                 .findByGroupAndUser(group, user)
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new GroupException(
                                 "You are not a member of this group."
                         ));
 
         if (member.getRole() != GroupRole.OWNER
                 && member.getRole() != GroupRole.ADMIN) {
 
-            throw new RuntimeException(
+            throw new GroupException(
                     "Only group owners or admins can perform this action."
             );
         }
@@ -667,35 +634,24 @@ public class GroupServiceImpl implements GroupService {
             UUID postId
     ) {
 
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null) {
-            throw new RuntimeException("User not authenticated");
-        }
-
-        String email = authentication.getName();
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+        User user = currentUserService.getCurrentUser();
 
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() ->
-                        new RuntimeException("Group not found"));
+                        new GroupException("Group not found"));
 
         // Verify user is OWNER or ADMIN
         getAdminMember(group, user);
 
         Post post = postRepository.findById(postId)
                 .orElseThrow(() ->
-                        new RuntimeException("Post not found"));
+                        new GroupException("Post not found"));
 
         // Ensure the post belongs to this group
         if (post.getGroup() == null
                 || !post.getGroup().getId().equals(groupId)) {
 
-            throw new RuntimeException(
+            throw new GroupException(
                     "This post does not belong to this group."
             );
         }
@@ -736,34 +692,23 @@ public class GroupServiceImpl implements GroupService {
             UUID postId
     ) {
 
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null) {
-            throw new RuntimeException("User not authenticated");
-        }
-
-        String email = authentication.getName();
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+        User user = currentUserService.getCurrentUser();
 
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() ->
-                        new RuntimeException("Group not found"));
+                        new GroupException("Group not found"));
 
         // Verify OWNER or ADMIN
         getAdminMember(group, user);
 
         Post post = postRepository.findById(postId)
                 .orElseThrow(() ->
-                        new RuntimeException("Post not found"));
+                        new GroupException("Post not found"));
 
         if (post.getGroup() == null
                 || !post.getGroup().getId().equals(groupId)) {
 
-            throw new RuntimeException(
+            throw new GroupException(
                     "This post does not belong to this group."
             );
         }
@@ -785,12 +730,12 @@ public class GroupServiceImpl implements GroupService {
     public void deleteGroup(String groupId) {
 
         Group group = groupRepository.findById(UUID.fromString(groupId))
-                .orElseThrow(() -> new RuntimeException("Group not found"));
+                .orElseThrow(() -> new GroupException("Group not found"));
 
         GroupMember currentMember = getCurrentMember(group);
 
         if (currentMember.getRole() != GroupRole.OWNER) {
-            throw new RuntimeException("Only the owner can delete this group.");
+            throw new GroupException("Only the owner can delete this group.");
         }
 
         groupRepository.delete(group);

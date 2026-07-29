@@ -293,8 +293,7 @@ public class MediaServiceImpl implements MediaService {
             MultipartFile file
 
     ) throws IOException {
-        System.out.println("Advertisement ID: " + advertisementId);
-        System.out.println("File: " + file.getOriginalFilename());
+
 
 
         return uploadSingleMedia(

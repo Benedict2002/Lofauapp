@@ -1,8 +1,10 @@
 package com.codewithben.Lofau.notification.service.impl;
 
+import com.codewithben.Lofau.Exception.notification.NotificationException;
 import com.codewithben.Lofau.Post.entity.Post;
 import com.codewithben.Lofau.User.model.User;
 import com.codewithben.Lofau.User.userRepo.UserRepository;
+import com.codewithben.Lofau.User.userService.CurrentUserService;
 import com.codewithben.Lofau.comment.entity.Comment;
 import com.codewithben.Lofau.notification.dto.NotificationRequest;
 import com.codewithben.Lofau.notification.dto.response.NotificationResponse;
@@ -31,18 +33,11 @@ public class NotificationServiceImpl implements NotificationService {
     private final NotificationMapper notificationMapper;
     private final UserRepository userRepository;
     private final NotificationFactory notificationFactory;
+    private final CurrentUserService currentUserService;
 
     private User getCurrentUser() {
 
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null) {
-            throw new RuntimeException("User not authenticated");
-        }
-
-        return userRepository.findByEmail(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+       return  currentUserService.getCurrentUser();
     }
 
     @Override
@@ -89,10 +84,10 @@ public class NotificationServiceImpl implements NotificationService {
         User user = getCurrentUser();
 
         Notification notification = notificationRepository.findById(notificationId)
-                .orElseThrow(() -> new RuntimeException("Notification not found"));
+                .orElseThrow(() -> new NotificationException("Notification not found"));
 
         if (!notification.getRecipient().getId().equals(user.getId())) {
-            throw new RuntimeException("Access denied");
+            throw new NotificationException("Access denied");
         }
 
         if (!notification.getRead()) {

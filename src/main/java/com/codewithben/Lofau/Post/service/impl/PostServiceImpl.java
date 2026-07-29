@@ -1,5 +1,8 @@
 package com.codewithben.Lofau.Post.service.impl;
 
+import com.codewithben.Lofau.Exception.group.GroupException;
+import com.codewithben.Lofau.Exception.post.PostException;
+import com.codewithben.Lofau.Exception.user.UserException;
 import com.codewithben.Lofau.Post.dto.request.CreatePostRequest;
 import com.codewithben.Lofau.Post.dto.request.UpdatePostRequest;
 import com.codewithben.Lofau.Post.dto.response.PostResponse;
@@ -15,6 +18,7 @@ import com.codewithben.Lofau.Post.repository.PostRepository;
 import com.codewithben.Lofau.Post.repository.PostViewRepository;
 import com.codewithben.Lofau.Post.repository.SavedPostRepository;
 import com.codewithben.Lofau.Post.service.PostService;
+import com.codewithben.Lofau.User.userService.CurrentUserService;
 import com.codewithben.Lofau.notification.dto.NotificationRequest;
 import com.codewithben.Lofau.notification.enums.NotificationType;
 import com.codewithben.Lofau.search.specification.PostSpecification;
@@ -57,6 +61,7 @@ public class PostServiceImpl implements PostService {
     private final NotificationService notificationService;
     private final SavedPostRepository savedPostRepository;
     private final PostViewRepository postViewRepository;
+    private final CurrentUserService currentUserService;
 
     @Override
     public PostResponse createPost(
@@ -64,17 +69,7 @@ public class PostServiceImpl implements PostService {
             List<MultipartFile> files
     ) throws IOException {
 
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null) {
-            throw new RuntimeException("No authenticated user found");
-        }
-
-        String email = authentication.getName();
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = currentUserService.getCurrentUser();
 
         Post post = postMapper.toEntity(request);
 
@@ -87,15 +82,15 @@ public class PostServiceImpl implements PostService {
 
             Group group = groupRepository.findById(request.getGroupId())
                     .orElseThrow(() ->
-                            new RuntimeException("Group not found"));
+                            new GroupException("Group not found"));
 
             GroupMember member = groupMemberRepository
                     .findByGroupAndUser(group, user)
                     .orElseThrow(() ->
-                            new RuntimeException("You are not a member of this group"));
+                            new GroupException("You are not a member of this group"));
 
             if (member.getStatus() != MemberStatus.APPROVED) {
-                throw new RuntimeException(
+                throw new GroupException(
                         "Your membership has not been approved."
                 );
             }
@@ -122,21 +117,8 @@ public class PostServiceImpl implements PostService {
     @Override
     public PostResponse likePost(UUID postId) {
 
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null) {
-            throw new RuntimeException("User not authenticated");
-        }
-
-        String email = authentication.getName();
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new RuntimeException("Post not found"));
-
+        User user = currentUserService.getCurrentUser();
+        Post post = getPost(postId);
         if (postLikeRepository.existsByPostAndUser(post, user)) {
             return postMapper.toResponse(post);
         }
@@ -179,20 +161,8 @@ public class PostServiceImpl implements PostService {
     @Override
     public PostResponse unlikePost(UUID postId) {
 
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null) {
-            throw new RuntimeException("User not authenticated");
-        }
-
-        String email = authentication.getName();
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new RuntimeException("Post not found"));
+        User user = currentUserService.getCurrentUser();
+        Post post = getPost(postId);
 
         PostLike like = postLikeRepository.findByPostAndUser(
                 post,
@@ -225,21 +195,8 @@ public class PostServiceImpl implements PostService {
     @Transactional
     public PostResponse getPostById(UUID postId) {
 
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null) {
-            throw new RuntimeException("User not authenticated");
-        }
-
-        String email = authentication.getName();
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() ->
-                        new RuntimeException("Post not found"));
+        User user = currentUserService.getCurrentUser();
+        Post post = getPost(postId);
 
         boolean alreadyViewed =
                 postViewRepository.existsByPostAndUser(post, user);
@@ -269,7 +226,7 @@ public class PostServiceImpl implements PostService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+                        new UserException("User not found"));
 
         return postRepository
                 .findByUserAndDeletedFalseOrderByCreatedAtDesc(user, pageable)
@@ -285,7 +242,7 @@ public class PostServiceImpl implements PostService {
 
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() ->
-                        new RuntimeException("Group not found"));
+                        new GroupException("Group not found"));
 
         return postRepository
                 .findGroupFeed(group, pageable)
@@ -295,22 +252,8 @@ public class PostServiceImpl implements PostService {
     @Override
     public PostResponse savePost(UUID postId) {
 
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null) {
-            throw new RuntimeException("User not authenticated");
-        }
-
-        String email = authentication.getName();
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new RuntimeException("User not found"));
-
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() ->
-                        new RuntimeException("Post not found"));
+        User user = currentUserService.getCurrentUser();
+        Post post = getPost(postId);
 
         if (savedPostRepository.existsByUserAndPost(user, post)) {
             return postMapper.toResponse(post);
@@ -329,22 +272,8 @@ public class PostServiceImpl implements PostService {
     @Override
     public PostResponse unsavePost(UUID postId) {
 
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null) {
-            throw new RuntimeException("User not authenticated");
-        }
-
-        String email = authentication.getName();
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new RuntimeException("User not found"));
-
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() ->
-                        new RuntimeException("Post not found"));
+        User user = currentUserService.getCurrentUser();
+        Post post = getPost(postId);
 
         SavedPost savedPost = savedPostRepository
                 .findByUserAndPost(user, post)
@@ -363,19 +292,7 @@ public class PostServiceImpl implements PostService {
     @Transactional(readOnly = true)
     public Page<PostResponse> getSavedPosts(Pageable pageable) {
 
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null) {
-            throw new RuntimeException("User not authenticated");
-        }
-
-        String email = authentication.getName();
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new RuntimeException("User not found"));
-
+        User user = currentUserService.getCurrentUser();
         return savedPostRepository
                 .findByUserOrderByCreatedAtDesc(user, pageable)
                 .map(savedPost ->
@@ -385,10 +302,8 @@ public class PostServiceImpl implements PostService {
     @Override
     public PostResponse sharePost(UUID postId) {
 
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() ->
-                        new RuntimeException("Post not found"));
 
+        Post post = getPost(postId);
         post.setShares(post.getShares() + 1);
 
         postRepository.save(post);
@@ -403,26 +318,11 @@ public class PostServiceImpl implements PostService {
             List<MultipartFile> files
     ) throws IOException {
 
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null) {
-            throw new RuntimeException("User not authenticated");
-        }
-
-        String email = authentication.getName();
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new RuntimeException("User not found"));
-
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() ->
-                        new RuntimeException("Post not found"));
-
+        User user = currentUserService.getCurrentUser();
+        Post post = getPost(postId);
         // Only the owner can edit the post
         if (!post.getUser().getId().equals(user.getId())) {
-            throw new RuntimeException(
+            throw new PostException(
                     "You are not allowed to edit this post."
             );
         }
@@ -450,26 +350,11 @@ public class PostServiceImpl implements PostService {
     @Override
     public void deletePost(UUID postId) {
 
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null) {
-            throw new RuntimeException("User not authenticated");
-        }
-
-        String email = authentication.getName();
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new RuntimeException("User not found"));
-
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() ->
-                        new RuntimeException("Post not found"));
-
+        User user = currentUserService.getCurrentUser();
+        Post post = getPost(postId);
         // Only the owner can delete
         if (!post.getUser().getId().equals(user.getId())) {
-            throw new RuntimeException(
+            throw new PostException(
                     "You are not allowed to delete this post."
             );
         }
@@ -487,6 +372,13 @@ public class PostServiceImpl implements PostService {
         post.setLikes((int) postLikeRepository.countByPost(post));
 
         postRepository.save(post);
+    }
+
+    private Post getPost(UUID postId) {
+
+        return postRepository.findById(postId)
+                .orElseThrow(() ->
+                        new PostException("Post not found"));
     }
 
 

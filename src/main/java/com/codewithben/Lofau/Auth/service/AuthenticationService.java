@@ -4,6 +4,7 @@ import com.codewithben.Lofau.Auth.dto.request.LoginRequest;
 import com.codewithben.Lofau.Auth.dto.request.RegisterRequest;
 import com.codewithben.Lofau.Auth.dto.response.AuthenticationResponse;
 import com.codewithben.Lofau.Auth.jwt.JwtService;
+import com.codewithben.Lofau.Exception.user.UserException;
 import com.codewithben.Lofau.User.model.User;
 import com.codewithben.Lofau.User.userRepo.UserRepository;
 import com.codewithben.Lofau.domain.AccountStatus;
@@ -25,11 +26,11 @@ public class AuthenticationService {
     public AuthenticationResponse register(RegisterRequest request) {
 
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists");
+            throw new UserException("Email already exists");
         }
 
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Username already exists");
+            throw new UserException("Username already exists");
         }
 
         User user = User.builder()
@@ -65,7 +66,7 @@ public class AuthenticationService {
         );
 
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserException("User not found"));
 
         String jwtToken = jwtService.generateToken(user);
 

@@ -1,5 +1,6 @@
 package com.codewithben.Lofau.Auth.jwt;
 
+import com.codewithben.Lofau.Exception.user.UserException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 
@@ -56,7 +57,7 @@ public class JwtService {
                 && !isTokenExpired(token);
     }
 
-    private boolean isTokenExpired(String token) {
+    private boolean isTokenExpired(String token) throws UserException {
         return extractExpiration(token)
                 .before(new Date());
     }

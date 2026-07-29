@@ -1,5 +1,6 @@
 package com.codewithben.Lofau.comment.service.impl;
 
+import com.codewithben.Lofau.Exception.comment.CommentException;
 import com.codewithben.Lofau.Post.entity.Post;
 import com.codewithben.Lofau.Post.repository.PostRepository;
 import com.codewithben.Lofau.User.model.User;
@@ -117,7 +118,7 @@ public class CommentServiceImpl implements CommentService {
         User user = currentUserService.getCurrentUser();
 
         Comment parent = commentRepository.findById(commentId)
-                .orElseThrow(() -> new RuntimeException("Comment not found"));
+                .orElseThrow(() -> new CommentException("Comment not found"));
 
         Comment reply = Comment.builder()
                 .ownerId(parent.getOwnerId())
@@ -164,7 +165,7 @@ public class CommentServiceImpl implements CommentService {
     ) {
 
         Comment parent = commentRepository.findById(commentId)
-                .orElseThrow(() -> new RuntimeException("Comment not found"));
+                .orElseThrow(() -> new CommentException("Comment not found"));
 
         return commentRepository
                 .findByParentOrderByCreatedAtAsc(parent)
