@@ -1,6 +1,8 @@
 package com.codewithben.Lofau.Auth.config;
 
 import com.codewithben.Lofau.Auth.jwt.JwtAuthenticationFilter;
+import com.codewithben.Lofau.Exception.auth.JwtAccessDeniedHandler;
+import com.codewithben.Lofau.Exception.auth.JwtAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +21,9 @@ public class SecurityConfig {
     private final AuthenticationProvider authenticationProvider;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http)
             throws Exception {
@@ -26,6 +31,10 @@ public class SecurityConfig {
         http
 
                 .csrf(csrf -> csrf.disable())
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                        .accessDeniedHandler(jwtAccessDeniedHandler)
+                )
 
                 .authorizeHttpRequests(auth -> auth
 
