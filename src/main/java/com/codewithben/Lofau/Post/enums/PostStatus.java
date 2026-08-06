@@ -5,6 +5,7 @@ public enum PostStatus {
 
     ACTIVE,
     RESOLVED,
-    DELETED
+    DELETED,
+    PENDING
 
 }

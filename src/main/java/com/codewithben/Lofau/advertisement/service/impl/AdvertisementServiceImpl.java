@@ -14,10 +14,9 @@ import com.codewithben.Lofau.advertisement.mapper.AdvertisementMapper;
 import com.codewithben.Lofau.advertisement.repository.AdvertisementRepository;
 import com.codewithben.Lofau.advertisement.service.AdvertisementService;
 import com.codewithben.Lofau.advertisement.validator.AdvertisementValidator;
-import com.codewithben.Lofau.advertisement.analytics.AdvertisementAnalyticsService;
+import com.codewithben.Lofau.advertisement.analytics.service.AdvertisementAnalyticsService;
 import com.codewithben.Lofau.advertisement.placement.AdvertisementPlacementService;
 import com.codewithben.Lofau.advertisement.targeting.AdvertisementTargetingService;
-import com.codewithben.Lofau.media.dto.response.MediaResponse;
 import com.codewithben.Lofau.media.service.MediaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -209,105 +208,7 @@ public class AdvertisementServiceImpl
                 .toList();
     }
 
-    @Override
-    @Transactional
-    public AdvertisementResponse approveAdvertisement(
-            UUID advertisementId
-    ) {
 
-        Advertisement advertisement =
-                findAdvertisement(advertisementId);
-
-        advertisementValidator.validateForApproval(
-                advertisement
-        );
-
-        advertisement.setApproved(true);
-
-        advertisementRepository.save(
-                advertisement
-        );
-
-        return advertisementMapper.toResponse(
-                advertisement
-        );
-    }
-
-    @Override
-    @Transactional
-    public AdvertisementResponse rejectAdvertisement(
-            UUID advertisementId
-    ) {
-
-        Advertisement advertisement =
-                findAdvertisement(advertisementId);
-
-        advertisement.setApproved(false);
-
-        advertisement.setStatus(
-                AdvertisementStatus.REJECTED
-        );
-
-        advertisementRepository.save(
-                advertisement
-        );
-
-        return advertisementMapper.toResponse(
-                advertisement
-        );
-    }
-
-    @Override
-    @Transactional
-    public AdvertisementResponse activateAdvertisement(
-            UUID advertisementId
-    ) {
-
-        Advertisement advertisement =
-                findAdvertisement(advertisementId);
-
-        advertisementValidator.validateForActivation(
-                advertisement
-        );
-
-        advertisement.setStatus(
-                AdvertisementStatus.ACTIVE
-        );
-
-        advertisement.setActive(true);
-
-        advertisementRepository.save(
-                advertisement
-        );
-
-        return advertisementMapper.toResponse(
-                advertisement
-        );
-    }
-
-    @Override
-    @Transactional
-    public AdvertisementResponse deactivateAdvertisement(
-            UUID advertisementId
-    ) {
-
-        Advertisement advertisement =
-                findAdvertisement(advertisementId);
-
-        advertisement.setActive(false);
-
-        advertisement.setStatus(
-                AdvertisementStatus.INACTIVE
-        );
-
-        advertisementRepository.save(
-                advertisement
-        );
-
-        return advertisementMapper.toResponse(
-                advertisement
-        );
-    }
 
     @Override
     @Transactional
@@ -412,128 +313,26 @@ public class AdvertisementServiceImpl
     }
 
     @Override
+    @Transactional(readOnly = true)
     public AdvertisementStatisticsResponse getAdvertisementStatistics(
             UUID advertisementId
     ) {
 
-        Advertisement advertisement =
-                findAdvertisement(advertisementId);
-
-        double ctr = 0;
-
-        if (advertisement.getImpressions() > 0) {
-
-            ctr = (double) advertisement.getClicks()
-                    / advertisement.getImpressions() * 100;
-        }
-
-        return AdvertisementStatisticsResponse.builder()
-
-                .impressions(advertisement.getImpressions())
-
-                .clicks(advertisement.getClicks())
-
-                .ctr(ctr)
-
-                .totalBudget(advertisement.getTotalBudget())
-
-                .spentBudget(advertisement.getSpentBudget())
-
-                .remainingBudget(
-                        advertisement.getRemainingBudget()
-                )
-
-                .build();
+        return advertisementMapper.toStatisticsResponse(
+                analyticsService.getAnalytics(advertisementId)
+        );
     }
 
     @Override
+    @Transactional(readOnly = true)
     public AdvertisementDashboardResponse getDashboard() {
 
-        User advertiser = getCurrentUser();
+        return advertisementMapper.toDashboardResponse(
 
-        List<Advertisement> advertisements =
-                advertisementRepository.findByAdvertiser(advertiser);
+                analyticsService.getAdvertiserAnalytics(
+                        getCurrentUser()
+                )
 
-        int impressions = advertisements.stream()
-
-                .mapToInt(Advertisement::getImpressions)
-
-                .sum();
-
-        int clicks = advertisements.stream()
-
-                .mapToInt(Advertisement::getClicks)
-
-                .sum();
-
-        int spent = advertisements.stream()
-
-                .mapToInt(Advertisement::getSpentBudget)
-
-                .sum();
-
-        long active = advertisements.stream()
-
-                .filter(Advertisement::getActive)
-
-                .count();
-
-        long pending = advertisements.stream()
-
-                .filter(ad -> !ad.getApproved())
-
-                .count();
-
-        double ctr = impressions == 0
-
-                ? 0
-
-                : (double) clicks / impressions * 100;
-
-        return AdvertisementDashboardResponse.builder()
-
-                .totalAdvertisements(advertisements.size())
-
-                .activeAdvertisements((int) active)
-
-                .pendingAdvertisements((int) pending)
-
-                .totalImpressions(impressions)
-
-                .totalClicks(clicks)
-
-                .totalSpent(spent)
-
-                .averageCTR(ctr)
-
-                .build();
-    }
-
-    @Override
-    public List<AdvertisementResponse> getPendingAdvertisements() {
-
-        return advertisementRepository
-
-                .findByApprovedFalseAndDeletedFalse()
-
-                .stream()
-
-                .map(advertisementMapper::toResponse)
-
-                .toList();
-    }
-
-    @Override
-    public List<AdvertisementResponse> getActiveAdvertisements() {
-
-        return advertisementRepository
-
-                .findByApprovedTrueAndActiveTrueAndDeletedFalse()
-
-                .stream()
-
-                .map(advertisementMapper::toResponse)
-
-                .toList();
+        );
     }
 }

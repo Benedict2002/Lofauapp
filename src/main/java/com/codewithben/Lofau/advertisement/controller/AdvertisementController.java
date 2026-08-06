@@ -129,55 +129,7 @@ public class AdvertisementController {
         );
     }
 
-    /**
-     * Approves an advertisement.
-     * Intended for administrators.
-     */
-    @PatchMapping("/{advertisementId}/approve")
-    public AdvertisementResponse approveAdvertisement(
-            @PathVariable UUID advertisementId
-    ) {
-        return advertisementService.approveAdvertisement(
-                advertisementId
-        );
-    }
 
-    /**
-     * Rejects an advertisement.
-     * Intended for administrators.
-     */
-    @PatchMapping("/{advertisementId}/reject")
-    public AdvertisementResponse rejectAdvertisement(
-            @PathVariable UUID advertisementId
-    ) {
-        return advertisementService.rejectAdvertisement(
-                advertisementId
-        );
-    }
-
-    /**
-     * Activates an approved advertisement.
-     */
-    @PatchMapping("/{advertisementId}/activate")
-    public AdvertisementResponse activateAdvertisement(
-            @PathVariable UUID advertisementId
-    ) {
-        return advertisementService.activateAdvertisement(
-                advertisementId
-        );
-    }
-
-    /**
-     * Deactivates an advertisement.
-     */
-    @PatchMapping("/{advertisementId}/deactivate")
-    public AdvertisementResponse deactivateAdvertisement(
-            @PathVariable UUID advertisementId
-    ) {
-        return advertisementService.deactivateAdvertisement(
-                advertisementId
-        );
-    }
 
     /**
      * Temporarily pauses an active advertisement.
@@ -295,24 +247,11 @@ public class AdvertisementController {
      */
     @GetMapping("/dashboard")
     public AdvertisementDashboardResponse getDashboard() {
+
         return advertisementService.getDashboard();
     }
 
-    /**
-     * Retrieves advertisements awaiting approval.
-     * Intended for administrators.
-     */
-    @GetMapping("/admin/pending")
-    public List<AdvertisementResponse> getPendingAdvertisements() {
-        return advertisementService.getPendingAdvertisements();
-    }
 
-    /**
-     * Retrieves all currently active advertisements.
-     * Intended for administrators.
-     */
-    @GetMapping("/admin/active")
-    public List<AdvertisementResponse> getActiveAdvertisements() {
-        return advertisementService.getActiveAdvertisements();
-    }
+
+
 }

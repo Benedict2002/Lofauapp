@@ -6,7 +6,7 @@ import com.codewithben.Lofau.User.dao.response.UserResponse;
 import com.codewithben.Lofau.User.mapper.UserMapper;
 import com.codewithben.Lofau.User.model.User;
 import com.codewithben.Lofau.User.userRepo.UserRepository;
-import com.codewithben.Lofau.domain.AccountStatus;
+import com.codewithben.Lofau.User.domain.AccountStatus;
 import com.codewithben.Lofau.media.dto.response.MediaResponse;
 import com.codewithben.Lofau.media.enums.OwnerType;
 import com.codewithben.Lofau.media.service.MediaService;

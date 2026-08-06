@@ -7,7 +7,7 @@ import com.codewithben.Lofau.Auth.jwt.JwtService;
 import com.codewithben.Lofau.Exception.user.UserException;
 import com.codewithben.Lofau.User.model.User;
 import com.codewithben.Lofau.User.userRepo.UserRepository;
-import com.codewithben.Lofau.domain.AccountStatus;
+import com.codewithben.Lofau.User.domain.AccountStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

@@ -1,4 +1,4 @@
-package com.codewithben.Lofau.domain;
+package com.codewithben.Lofau.User.domain;
 
 public enum AccountStatus {
     ACTIVE,

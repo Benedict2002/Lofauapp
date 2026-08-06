@@ -2,6 +2,7 @@ package com.codewithben.Lofau.Post.repository;
 
 import com.codewithben.Lofau.Post.entity.Post;
 import com.codewithben.Lofau.Post.enums.PostStatus;
+import com.codewithben.Lofau.Post.enums.PostType;
 import com.codewithben.Lofau.User.model.User;
 import com.codewithben.Lofau.group.entity.Group;
 import org.springframework.data.domain.Page;
@@ -9,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -31,6 +33,14 @@ public interface PostRepository
             Pageable pageable
     );
 
+    long countByDeletedFalse();
+
+    long countByDeletedTrue();
+
+    long countByApprovedFalse();
+
+    long countByStatus(PostStatus status);
+
 
     @Query("""
     SELECT p
@@ -50,4 +60,22 @@ public interface PostRepository
             Group group
     );
 
+
+    long countByPostType(PostType postType);
+
+
+    /**
+     * Counts posts created after the given date.
+     */
+    long countByCreatedAtAfter(LocalDateTime createdAt);
+
+    /**
+     * Counts posts created after the given date
+     * by post type.
+     */
+    long countByCreatedAtAfterAndPostType(
+            LocalDateTime createdAt,
+            PostType postType
+    );
+    long countByPinnedTrue();
 }

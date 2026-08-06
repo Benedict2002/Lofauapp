@@ -1,0 +1,65 @@
+package com.codewithben.Lofau.admin.audit.enums;
+
+public enum AuditAction {
+
+    /*
+     * USER MANAGEMENT
+     */
+    USER_CREATED,
+    USER_UPDATED,
+    USER_SUSPENDED,
+    USER_ACTIVATED,
+    USER_DEACTIVATED,
+    USER_VERIFIED,
+    USER_DELETED,
+
+    /*
+     * ROLE MANAGEMENT
+     */
+    ROLE_ASSIGNED,
+    ROLE_REMOVED,
+    ROLE_ACTIVATED,
+    ROLE_DEACTIVATED,
+
+    /*
+     * POST MODERATION
+     */
+    POST_APPROVED,
+    POST_REJECTED,
+    POST_DELETED,
+    POST_RESTORED,
+    POST_PINNED,
+    POST_UNPINNED,
+
+    /*
+     * ADVERTISEMENTS
+     */
+    ADVERTISEMENT_APPROVED,
+    ADVERTISEMENT_REJECTED,
+    ADVERTISEMENT_PAUSED,
+    ADVERTISEMENT_RESUMED,
+    ADVERTISEMENT_DELETED,
+    ADVERTISEMENT_ACTIVATED,
+    ADVERTISEMENT_DEACTIVATED,
+
+    /*
+     * REPORTS
+     */
+    REPORT_REVIEWED,
+    REPORT_RESOLVED,
+    REPORT_DISMISSED,
+
+    /*
+     * GROUPS
+     */
+    GROUP_APPROVED,
+    GROUP_DELETED,
+    GROUP_UPDATED,
+
+    /*
+     * SYSTEM
+     */
+    LOGIN,
+    LOGOUT,
+    SETTINGS_UPDATED
+}

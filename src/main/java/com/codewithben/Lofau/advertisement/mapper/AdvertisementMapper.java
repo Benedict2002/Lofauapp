@@ -1,8 +1,12 @@
 package com.codewithben.Lofau.advertisement.mapper;
 
+import com.codewithben.Lofau.advertisement.analytics.dto.response.AdvertisementAnalyticsResponse;
+import com.codewithben.Lofau.advertisement.analytics.dto.response.AdvertisementPerformanceResponse;
 import com.codewithben.Lofau.advertisement.dto.request.CreateAdvertisementRequest;
 import com.codewithben.Lofau.advertisement.dto.request.UpdateAdvertisementRequest;
+import com.codewithben.Lofau.advertisement.dto.response.AdvertisementDashboardResponse;
 import com.codewithben.Lofau.advertisement.dto.response.AdvertisementResponse;
+import com.codewithben.Lofau.advertisement.dto.response.AdvertisementStatisticsResponse;
 import com.codewithben.Lofau.advertisement.entity.Advertisement;
 import com.codewithben.Lofau.media.dto.response.MediaResponse;
 import com.codewithben.Lofau.media.enums.OwnerType;
@@ -17,6 +21,57 @@ import java.util.List;
 public class AdvertisementMapper {
 
     private final MediaService mediaService;
+
+    public AdvertisementStatisticsResponse toStatisticsResponse(
+            AdvertisementAnalyticsResponse analytics
+    ) {
+
+        if (analytics == null) {
+            return null;
+        }
+
+        return AdvertisementStatisticsResponse.builder()
+                .impressions(analytics.getImpressions())
+                .clicks(analytics.getClicks())
+                .ctr(analytics.getCtr())
+                .totalBudget(
+                        analytics.getSpentBudget()
+                                + analytics.getRemainingBudget()
+                )
+                .spentBudget(analytics.getSpentBudget())
+                .remainingBudget(analytics.getRemainingBudget())
+                .build();
+    }
+    public AdvertisementDashboardResponse toDashboardResponse(
+            AdvertisementPerformanceResponse performance
+    ) {
+
+        if (performance == null) {
+            return null;
+        }
+
+        return AdvertisementDashboardResponse.builder()
+                .totalAdvertisements(
+                        performance.getTotalAdvertisements()
+                )
+                .activeAdvertisements(
+                        performance.getActiveAdvertisements()
+                )
+                .totalImpressions(
+                        performance.getTotalImpressions()
+                )
+                .totalClicks(
+                        performance.getTotalClicks()
+                )
+                .totalSpent(
+                        performance.getTotalRevenueSpent()
+                )
+                .averageCTR(
+                        performance.getOverallCTR()
+                )
+                .build();
+    }
+
 
     public Advertisement toEntity(
             CreateAdvertisementRequest request

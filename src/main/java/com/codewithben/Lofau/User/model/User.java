@@ -1,7 +1,7 @@
 package com.codewithben.Lofau.User.model;
 
 
-import com.codewithben.Lofau.domain.AccountStatus;
+import com.codewithben.Lofau.User.domain.AccountStatus;
 import com.codewithben.Lofau.group.entity.GroupMember;
 import jakarta.persistence.*;
 import lombok.*;

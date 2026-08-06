@@ -1,7 +1,7 @@
 package com.codewithben.Lofau.advertisement.engine;
 
 import com.codewithben.Lofau.User.model.User;
-import com.codewithben.Lofau.advertisement.analytics.AdvertisementAnalyticsService;
+import com.codewithben.Lofau.advertisement.analytics.service.AdvertisementAnalyticsService;
 import com.codewithben.Lofau.advertisement.dto.response.AdvertisementResponse;
 import com.codewithben.Lofau.advertisement.entity.Advertisement;
 import com.codewithben.Lofau.advertisement.enums.AdvertisementPlacement;

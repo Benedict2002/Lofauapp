@@ -1,5 +1,6 @@
-package com.codewithben.Lofau.advertisement.analytics;
+package com.codewithben.Lofau.advertisement.analytics.service;
 
+import com.codewithben.Lofau.User.model.User;
 import com.codewithben.Lofau.advertisement.analytics.dto.response.AdvertisementAnalyticsResponse;
 import com.codewithben.Lofau.advertisement.analytics.dto.response.AdvertisementPerformanceResponse;
 
@@ -20,5 +21,6 @@ public interface AdvertisementAnalyticsService {
     void recordShare(UUID advertisementId);
 
     void recordConversion(UUID advertisementId);
+    AdvertisementPerformanceResponse getAdvertiserAnalytics(User advertiser);
 
 }

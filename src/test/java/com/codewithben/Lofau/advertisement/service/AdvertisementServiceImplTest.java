@@ -2,7 +2,7 @@ package com.codewithben.Lofau.advertisement.service;
 
 import com.codewithben.Lofau.User.model.User;
 import com.codewithben.Lofau.User.userRepo.UserRepository;
-import com.codewithben.Lofau.advertisement.analytics.AdvertisementAnalyticsService;
+import com.codewithben.Lofau.advertisement.analytics.service.AdvertisementAnalyticsService;
 import com.codewithben.Lofau.advertisement.dto.request.CreateAdvertisementRequest;
 import com.codewithben.Lofau.advertisement.dto.request.UpdateAdvertisementRequest;
 import com.codewithben.Lofau.advertisement.dto.response.AdvertisementDashboardResponse;

@@ -35,21 +35,9 @@ public interface AdvertisementService {
             String placement
     );
 
-    AdvertisementResponse approveAdvertisement(
-            UUID advertisementId
-    );
 
-    AdvertisementResponse rejectAdvertisement(
-            UUID advertisementId
-    );
 
-    AdvertisementResponse activateAdvertisement(
-            UUID advertisementId
-    );
 
-    AdvertisementResponse deactivateAdvertisement(
-            UUID advertisementId
-    );
 
     AdvertisementResponse pauseAdvertisement(
             UUID advertisementId
@@ -72,8 +60,8 @@ public interface AdvertisementService {
 
     AdvertisementDashboardResponse getDashboard();
 
-    List<AdvertisementResponse> getPendingAdvertisements();
 
-    List<AdvertisementResponse> getActiveAdvertisements();
+
+
 
 }

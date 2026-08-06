@@ -1,7 +1,5 @@
 package com.codewithben.Lofau.advertisement.analytics.dto.response;
 
-
-
 import lombok.Builder;
 import lombok.Data;
 
@@ -9,18 +7,39 @@ import lombok.Data;
 @Builder
 public class AdvertisementPerformanceResponse {
 
-    private Integer totalAdvertisements;
+    /**
+     * Total advertisements on the platform.
+     */
+    private Long totalAdvertisements;
 
-    private Integer activeAdvertisements;
+    /**
+     * Currently active advertisements.
+     */
+    private Long activeAdvertisements;
 
-    private Integer totalImpressions;
+    /**
+     * Total advertisement impressions.
+     */
+    private Long totalImpressions;
 
-    private Integer totalClicks;
+    /**
+     * Total advertisement clicks.
+     */
+    private Long totalClicks;
 
-    private Integer totalConversions;
+    /**
+     * Total successful conversions.
+     */
+    private Long totalConversions;
 
+    /**
+     * Overall Click-Through Rate.
+     */
     private Double overallCTR;
 
-    private Integer totalRevenueSpent;
+    /**
+     * Total amount spent across all advertisements.
+     */
+    private Long totalRevenueSpent;
 
 }
